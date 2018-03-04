@@ -7,6 +7,9 @@
     "name": "Baal"
   },
   "dependencies": {
-    "bencode": "^2.0.0"
+    "bencode": "^2.0.0",
+    "bittorrent-dht": "^8.1.0",
+    "bittorrent-protocol": "^2.4.0",
+    "magnet-uri": "^5.1.7"
   }
 }

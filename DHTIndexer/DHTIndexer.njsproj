@@ -11,7 +11,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>bb3ae382-34e5-4b49-bd9a-74d9c07543a7</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>app.js</StartupFile>
+    <StartupFile>testPeerDiscovery.js</StartupFile>
     <StartWebBrowser>False</StartWebBrowser>
     <SearchPath>
     </SearchPath>
@@ -28,9 +28,30 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="app.js" />
+    <Compile Include="index.js">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="lib\DHTIndexer.js" />
+    <Compile Include="lib\routingTable.js">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="lib\utils.js">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="metadataFetcher.js">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="PeerDiscovery.js">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="testPeerDiscovery.js">
+      <SubType>Code</SubType>
+    </Compile>
     <Content Include="package.json" />
     <Content Include="README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="lib\" />
   </ItemGroup>
   <!-- Do not delete the following Import Project.  While this appears to do nothing it is a marker for setting TypeScript properties before our import that depends on them. -->
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="False" />
