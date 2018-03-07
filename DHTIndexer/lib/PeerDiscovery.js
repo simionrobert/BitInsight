@@ -15,19 +15,11 @@ function PeerDiscovery(opts) {
 
     self._port = opts.port ? opts.port : 20000; // torrent port
     self._intervalMs = opts.intervalMs || (15 * 60 * 1000)
-    self.destroyed = false
+
+    self._destroyed = false
     self._dhtAnnouncing = false
     self._dhtTimeout = false
 
-    if (opts.dht) {
-        self.dht = dht;
-    }
-    else {
-        self.dht = new DHT(opts)
-        self.dht.on('warning', self._onWarning)
-        self.dht.on('error', self._onError)
-        self.dht.listen(port)
-    }
 
     self._onWarning = function (err) {
         self.emit('warning', err)
@@ -36,7 +28,19 @@ function PeerDiscovery(opts) {
         self.emit('error', err)
     }
     self._onDHTPeer = function (peer, infoHash, from) {
-        self.emit('peer',peer, infoHash, from)
+        if (infoHash.toString('hex') !== self._infohash) return
+        self.emit('peer', peer, infoHash, from)
+    }.bind(this);
+
+
+    if (opts.dht) {
+        self.dht = dht;
+    }
+    else {
+        self.dht = new DHT(opts)
+        self.dht.on('warning', self._onWarning)
+        self.dht.on('error', self._onError)
+        self.dht.listen(self._port)
     }
 
     if (self.dht) {
@@ -44,13 +48,10 @@ function PeerDiscovery(opts) {
     }
 }
 
-function createDHT(port, opts) {
-
-    return dht
-}
-
 PeerDiscovery.prototype.lookup = function (infohash) {
-    this.infohash = infohash;
+
+    //entry point
+    this._infohash = infohash;
     this.dht.lookup(infohash);
     this._dhtAnnounce();
 }
@@ -59,17 +60,17 @@ PeerDiscovery.prototype._dhtAnnounce = function () {
     var self = this
     if (self._dhtAnnouncing)
         return
-    console.log('announcing')
+    console.log('Announcing')
     self._dhtAnnouncing = true
     clearTimeout(self._dhtTimeout)
 
-    self.dht.announce(self.infohash, self._port, function (err) {
+    self.dht.announce(self._infohash, self._port, function (err) {
         self._dhtAnnouncing = false
 
         if (err) self.emit('warning', err)
         self.emit('dhtAnnounce')
 
-        if (!self.destroyed) {
+        if (!self._destroyed) {
             self._dhtTimeout = setTimeout(function () {
                 self._dhtAnnounce()
             }, getRandomTimeout())
@@ -86,8 +87,8 @@ PeerDiscovery.prototype._dhtAnnounce = function () {
 
 PeerDiscovery.prototype.destroy = function (cb) {
     var self = this
-    if (self.destroyed) return
-    self.destroyed = true
+    if (self._destroyed) return
+    self._destroyed = true
      
     clearTimeout(self._dhtTimeout)
 

@@ -24,9 +24,9 @@
 //dht.lookup(parsed.infoHash);
 //_dhtAnnounce();
 
-var PeerDiscovery = require('./PeerDiscovery');
+var PeerDiscovery = require('./lib/PeerDiscovery');
 
-const INFO_HASH = '77e0091dd0f5e12ade5b45b509f1768b2ba83b8a';   // ubuntu-16.04.1-server-amd64.iso
+const INFO_HASH = '5dfcf599f5eac360e107701d0ed72c416a5097fc';   // ubuntu-16.04.1-server-amd64.iso
 
 var instance = new PeerDiscovery({ port: 6881, dht: false })
 
@@ -35,3 +35,4 @@ instance.on('peer', function (peer, infoHash, from) {
 });
 
 instance.lookup(INFO_HASH);
+
