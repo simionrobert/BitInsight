@@ -86,20 +86,19 @@ PeerDiscovery.prototype._dhtAnnounce = function () {
 
 
 PeerDiscovery.prototype.destroy = function (cb) {
-    var self = this
-    if (self._destroyed) return
-    self._destroyed = true
+    if (this._destroyed) return
+    this._destroyed = true
      
-    clearTimeout(self._dhtTimeout)
+    clearTimeout(this._dhtTimeout)
 
     if (self.dht) {
-        self.dht.removeListener('peer', self._onDHTPeer)
+        this.dht.removeListener('peer', this._onDHTPeer)
     }
 
-    self.dht.removeListener('warning', self._onWarning)
-    self.dht.removeListener('error', self._onError)
-    self.dht.destroy(cb)
+    this.dht.removeListener('warning', this._onWarning)
+    this.dht.removeListener('error', this._onError)
+    this.dht.destroy(cb)
 
     // cleanup
-    self.dht = null
+    this.dht = null
 }

@@ -1,4 +1,4 @@
-﻿var PeerDiscovery = require('./lib/PeerDiscovery');
+﻿var PeerDiscovery = require('./PeerDiscovery');
 const Protocol = require('bittorrent-protocol');
 const ut_metadata = require('ut_metadata');
 const bencode = require('bencode');
@@ -72,6 +72,7 @@ function getMetadata(peerAddress, infoHash) {
             }
 
             process.exit(0); //critical
+            instance.destroy();
         })
     });
     socket.on('error', err => { socket.destroy(); });
