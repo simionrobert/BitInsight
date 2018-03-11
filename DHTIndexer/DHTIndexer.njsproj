@@ -11,7 +11,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>bb3ae382-34e5-4b49-bd9a-74d9c07543a7</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>test\testPeerDiscovery.js</StartupFile>
+    <StartupFile>test\testDHTIndexer.js</StartupFile>
     <StartWebBrowser>False</StartWebBrowser>
     <SearchPath>
     </SearchPath>
@@ -31,14 +31,15 @@
     <Compile Include="index.js">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="test\testDHTIndexer.js">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="lib\DHTIndexer.js" />
+    <Compile Include="lib\MetadataFetcher.js" />
     <Compile Include="lib\routingTable.js">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="lib\utils.js">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="lib\metadataFetcher.js">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="lib\PeerDiscovery.js">

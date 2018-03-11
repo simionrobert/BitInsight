@@ -1,81 +1,104 @@
-﻿var PeerDiscovery = require('./PeerDiscovery');
+﻿'use strict';
+
+var EventEmitter = require('events')
+var PeerDiscovery = require('./PeerDiscovery');
+
 const Protocol = require('bittorrent-protocol');
 const ut_metadata = require('ut_metadata');
 const bencode = require('bencode');
 const net = require('net');
+const utils = require('./utils');
+
+class MetadataFetcher extends EventEmitter {
+    constructor(opts) {
+        super();
+        if (!(this instanceof MetadataFetcher))
+            return new MetadataFetcher(opts);
+
+        this.selfID = utils.generateRandomID();
+        this.files = [];
+        this.torrentName = null;
+        this.metadataGot = false;
+
+        if (opts.peerDiscovery != undefined)
+            this.peerDiscovery = opts.peerDiscovery;
+        else if (opts.DEFAULT_PEER_DISCOVERY_OPTIONS === undefined) 
+            this.peerDiscovery = new PeerDiscovery({ port: 6881, dht: false });
+        else 
+            this.peerDiscovery = new PeerDiscovery(opts.DEFAULT_PEER_DISCOVERY_OPTIONS);
 
 
-//hashes must be always lowercase
-const SELF_HASH = '4290a5ff50130a90f1de64b1d9cc7822799affd5';   // Random infohash
-const INFO_HASH = '5636cd5dadf6672ae29e538e5c82ed5e4a2bd562';   // ubuntu-16.04.1-server-amd64.iso
-//77e0091dd0f5e12ade5b45b509f1768b2ba83b8a
-//9d9b0a063b9dd4aad72dfb6e62617e343ab024f8
+        this._onDHTPeer = function (peer, infoHash, from) {
+            this.emit('peer', peer, infoHash, from);
+            this._getMetadata(peer, infoHash);
+        }.bind(this);
 
+        this.peerDiscovery.on('peer', this._onDHTPeer);
+    }
 
-var peerList = [];
-var instance = new PeerDiscovery({ port: 6881, dht: false })
+    getMetadata(infohash) {
+        this.peerDiscovery.lookup(infohash);
+    }
 
-instance.on('peer', function (peer, infoHash, from) {
-    const peerAddress = { address: peer.host, port: peer.port };
-    console.log('found potential peer ' + peer.host + ':' + peer.port + ' through ' + from.address + ':' + from.port);
-    getMetadata(peerAddress, INFO_HASH);
-});
+    _getMetadata(peer, infoHash) {
+        const socket = new net.Socket();
+        socket.on('error', err => { socket.destroy(); });
+        socket.setTimeout(5000);
 
-function getMetadata(peerAddress, infoHash) {
-    const socket = new net.Socket();
-    socket.on('timeout', function () {
-        console.log("Timeout");
-    });
+        this._onPeerConnected = function () {
+            const wire = new Protocol();
 
-    socket.setTimeout(5000);
+            socket.pipe(wire).pipe(socket);
+            wire.use(ut_metadata());
 
-    socket.connect(peerAddress.port, peerAddress.address, () => {
-        const wire = new Protocol();
+            wire.handshake(infoHash, this.selfID, { dht: true });
+            wire.on('handshake', function (infoHash, peerId) {
+                wire.ut_metadata.fetch();
+            });
 
-        socket.pipe(wire).pipe(socket);
-        wire.use(ut_metadata());
+            var _onMetadataArrived = function (rawMetadata) {
+                if (!this.metadataGot) {
+                    this.metadataGot = true;
+                    this._metadataGot(rawMetadata);
 
-        wire.handshake(infoHash, SELF_HASH, { dht: true });
-        wire.on('handshake', function (infoHash, peerId) {
-            wire.ut_metadata.fetch();
-        })
+                    this.emit('metadata', this.torrentName, this.files, socket.remoteAddress);
 
-        wire.ut_metadata.on('metadata', function (rawMetadata) {
-            metadata = bencode.decode(rawMetadata).info;                // Got it!
-
-
-            console.log("Metadata got from: %s", socket.remoteAddress);
-            console.log(`${metadata.name.toString('utf-8')}:`);
-            var files = [];
-            var totalLenght = 0;
-
-            //if multiple files
-            if (metadata.hasOwnProperty('files')) {
-                var l = metadata.files.length;
-                for (var i = 0; i < l; i++) {
-                    files.push(
-                        {
-                            filename: metadata.files[i].path.toString('utf-8'),
-                            length: metadata.files[i].length
-                        });
-
-                    totalLenght += metadata.files[i].length;
+                    this.peerDiscovery.destroy();
                 }
-            } else {
+            }.bind(this);
 
-                //single file
-                files.push(
+
+            wire.ut_metadata.on('metadata', _onMetadataArrived );
+        }.bind(this);
+
+        socket.connect(peer.port, peer.host, this._onPeerConnected);
+    }
+
+    _metadataGot(rawMetadata) {
+        var metadata = bencode.decode(rawMetadata).info;
+
+        this.torrentName = metadata.name.toString('utf-8');
+        if (metadata.hasOwnProperty('files')) {
+
+            // multiple files
+            var l = metadata.files.length;
+            for (var i = 0; i < l; i++) {
+                this.files.push(
                     {
-                        filename: metadata.name.toString('utf-8'),
-                        length: metadata.length
+                        name: metadata.files[i].path.toString('utf-8'),
+                        length: metadata.files[i].length
                     });
             }
+        } else {
 
-            process.exit(0); //critical
-            instance.destroy();
-        })
-    });
-    socket.on('error', err => { socket.destroy(); });
+            // single file
+            this.files.push(
+                {
+                    name: metadata.name.toString('utf-8'),
+                    length: metadata.length
+                });
+        }
+    }
 }
 
-instance.lookup(INFO_HASH);
+module.exports = MetadataFetcher;

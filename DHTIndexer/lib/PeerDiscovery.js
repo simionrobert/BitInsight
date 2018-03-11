@@ -1,104 +1,111 @@
-﻿module.exports = PeerDiscovery
+﻿'use strict';
 
 var DHT = require('bittorrent-dht/client') // empty object in browser
-var EventEmitter = require('events').EventEmitter
+var EventEmitter = require('events')
 var util = require('util')
 
+class PeerDiscovery extends EventEmitter {
 
-util.inherits(PeerDiscovery, EventEmitter)
+    constructor(opts) {
+        super();
+        if (!(this instanceof PeerDiscovery))
+            return new PeerDiscovery(opts)
+      
 
-function PeerDiscovery(opts) {
-    var self = this
-    if (!(self instanceof PeerDiscovery)) 
-        return new PeerDiscovery(opts)
-    EventEmitter.call(self)
+        this._port = opts.port ? opts.port : 20000; // torrent port
+        this._intervalMs = opts.intervalMs || (15 * 60 * 1000) //15 minutes
 
-    self._port = opts.port ? opts.port : 20000; // torrent port
-    self._intervalMs = opts.intervalMs || (15 * 60 * 1000)
-
-    self._destroyed = false
-    self._dhtAnnouncing = false
-    self._dhtTimeout = false
-
-
-    self._onWarning = function (err) {
-        self.emit('warning', err)
-    }
-    self._onError = function (err) {
-        self.emit('error', err)
-    }
-    self._onDHTPeer = function (peer, infoHash, from) {
-        if (infoHash.toString('hex') !== self._infohash) return
-        self.emit('peer', peer, infoHash, from)
-    }.bind(this);
+        this._destroyed = false
+        this._dhtAnnouncing = false
+        this._dhtTimeout = false
 
 
-    if (opts.dht) {
-        self.dht = dht;
-    }
-    else {
-        self.dht = new DHT(opts)
-        self.dht.on('warning', self._onWarning)
-        self.dht.on('error', self._onError)
-        self.dht.listen(self._port)
-    }
+        this._onWarning = function (err) {
+            this.emit('warning', err)
+        }.bind(this);
+        this._onError = function (err) {
+            this.emit('error', err)
+        }.bind(this);
+        this._onDHTPeer = function (peer, infoHash, from) {
+            if (infoHash.toString('hex') !== this._infohash)
+                return;
 
-    if (self.dht) {
-        self.dht.on('peer', self._onDHTPeer)
-    }
-}
+            this.emit('peer', peer, infoHash, from);
+        }.bind(this);
 
-PeerDiscovery.prototype.lookup = function (infohash) {
 
-    //entry point
-    this._infohash = infohash;
-    this.dht.lookup(infohash);
-    this._dhtAnnounce();
-}
-
-PeerDiscovery.prototype._dhtAnnounce = function () {
-    var self = this
-    if (self._dhtAnnouncing)
-        return
-    console.log('Announcing')
-    self._dhtAnnouncing = true
-    clearTimeout(self._dhtTimeout)
-
-    self.dht.announce(self._infohash, self._port, function (err) {
-        self._dhtAnnouncing = false
-
-        if (err) self.emit('warning', err)
-        self.emit('dhtAnnounce')
-
-        if (!self._destroyed) {
-            self._dhtTimeout = setTimeout(function () {
-                self._dhtAnnounce()
-            }, getRandomTimeout())
-            if (self._dhtTimeout.unref) self._dhtTimeout.unref()
+        if (opts.dht) {
+            this.dht = dht;
         }
-    })
+        else {
+            this.dht = new DHT(opts)
+            this.dht.on('warning', this._onWarning)
+            this.dht.on('error', this._onError)
+            this.dht.listen(this._port)
+        }
+
+        if (this.dht) {
+            this.dht.on('peer', this._onDHTPeer)
+        }
+    }
+
+    lookup(infohash) {
+
+        //entry point
+        this._infohash = infohash;
+        this.dht.lookup(infohash);
+        this.dhtAnnounce();
+    }
+
+    dhtAnnounce() {
+        //Announce that the peer, controlling the querying node, is downloading a torrent on a port.
+
+        if (this._dhtAnnouncing)
+            return;
+
+        console.log('Announcing');
+        this._dhtAnnouncing = true;
+        clearTimeout(this._dhtTimeout);
+
+        this.dht.announce(this._infohash, this._port, function (err) {
+            this._dhtAnnouncing = false
+
+            if (err)
+                this.emit('warning', err)
+
+            if (!this._destroyed) {
+                this.emit('dhtAnnounce')
+
+                this._dhtTimeout = setTimeout(function () {
+                    this.dhtAnnounce()
+                }.bind(this), this._getRandomTimeout())
+
+                if (this._dhtTimeout.unref)
+                    this._dhtTimeout.unref()
+            }
+        }.bind(this));
+    }
+
+    destroy(cb) {
+        if (this._destroyed)
+            return
+        this._destroyed = true
+
+        clearTimeout(this._dhtTimeout)
+
+        this.dht.removeListener('peer', this._onDHTPeer)
+        this.dht.removeListener('warning', this._onWarning)
+        this.dht.removeListener('error', this._onError)
+        this.dht.destroy(cb)
+
+        // cleanup
+        this.dht = null
+    }
 
     // Returns timeout interval, with some random jitter
-    function getRandomTimeout() {
-        return self._intervalMs + Math.floor(Math.random() * self._intervalMs / 5)
+    _getRandomTimeout() {
+        return this._intervalMs + Math.floor(Math.random() * this._intervalMs / 5)
     }
 }
 
-
-PeerDiscovery.prototype.destroy = function (cb) {
-    if (this._destroyed) return
-    this._destroyed = true
-     
-    clearTimeout(this._dhtTimeout)
-
-    if (self.dht) {
-        this.dht.removeListener('peer', this._onDHTPeer)
-    }
-
-    this.dht.removeListener('warning', this._onWarning)
-    this.dht.removeListener('error', this._onError)
-    this.dht.destroy(cb)
-
-    // cleanup
-    this.dht = null
-}
+module.exports = PeerDiscovery

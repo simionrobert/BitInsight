@@ -10,6 +10,13 @@ var BOOTSTRAP_NODES = [
     ['dht.transmissionbt.com', 6881]
 ];
 
+class DHTIndexer extends EventEmitter {
+    constructor(options) {
+        super();
+
+    }
+}
+
 var DHTIndexer = function (options) {
     this.address = options.address;
     this.port = options.port;
