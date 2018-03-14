@@ -11,7 +11,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>bb3ae382-34e5-4b49-bd9a-74d9c07543a7</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>test\testDHTIndexer.js</StartupFile>
+    <StartupFile>test\testMetadataFetcher.js</StartupFile>
     <StartWebBrowser>False</StartWebBrowser>
     <SearchPath>
     </SearchPath>
