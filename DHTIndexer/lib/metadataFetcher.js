@@ -27,9 +27,7 @@ class MetadataFetcher extends EventEmitter {
         else 
             this.peerDiscovery = new PeerDiscovery(opts.DEFAULT_PEER_DISCOVERY_OPTIONS);
 
-
         this._onDHTPeer = function (peer, infoHash, from) {
-            this.emit('peer', peer, infoHash, from);
             this._getMetadata(peer, infoHash);
         }.bind(this);
 
@@ -46,35 +44,37 @@ class MetadataFetcher extends EventEmitter {
         socket.setTimeout(5000);
 
         this._onPeerConnected = function () {
-            const wire = new Protocol();
+            if (!this.metadataGot) {
+                const wire = new Protocol();
 
-            socket.pipe(wire).pipe(socket);
-            wire.use(ut_metadata());
+                socket.pipe(wire).pipe(socket);
+                wire.use(ut_metadata());
 
-            wire.handshake(infoHash, this.selfID, { dht: true });
-            wire.on('handshake', function (infoHash, peerId) {
-                wire.ut_metadata.fetch();
-            });
+                wire.handshake(infoHash, this.selfID, { dht: true });
+                wire.on('handshake', function (infoHash, peerId) {
+                    wire.ut_metadata.fetch();
+                });
 
-            var _onMetadataArrived = function (rawMetadata) {
-                if (!this.metadataGot) {
-                    this.metadataGot = true;
-                    this._metadataGot(rawMetadata);
+                var _onMetadataArrived = function (rawMetadata) {
+                    if (!this.metadataGot) {
+                        this.metadataGot = true;
+                        this._parseMetadata(rawMetadata);
 
-                    this.emit('metadata', this.torrentName, this.files, socket.remoteAddress);
+                        this.emit('metadata', this.torrentName, this.files, socket.remoteAddress)
+                        this.peerDiscovery.removeListener('peer', this._onDHTPeer)
+                        wire.ut_metadata.removeListener('metadata', _onMetadataArrived)
+                    }
+                }.bind(this);
 
-                    this.peerDiscovery.destroy();
-                }
-            }.bind(this);
 
-
-            wire.ut_metadata.on('metadata', _onMetadataArrived );
+                wire.ut_metadata.on('metadata', _onMetadataArrived);
+            }
         }.bind(this);
 
         socket.connect(peer.port, peer.host, this._onPeerConnected);
     }
 
-    _metadataGot(rawMetadata) {
+    _parseMetadata(rawMetadata) {
         var metadata = bencode.decode(rawMetadata).info;
 
         this.torrentName = metadata.name.toString('utf-8');
@@ -86,7 +86,7 @@ class MetadataFetcher extends EventEmitter {
                 this.files.push(
                     {
                         name: metadata.files[i].path.toString('utf-8'),
-                        length: metadata.files[i].length
+                        size: metadata.files[i].length
                     });
             }
         } else {
@@ -95,7 +95,7 @@ class MetadataFetcher extends EventEmitter {
             this.files.push(
                 {
                     name: metadata.name.toString('utf-8'),
-                    length: metadata.length
+                    size: metadata.length
                 });
         }
     }

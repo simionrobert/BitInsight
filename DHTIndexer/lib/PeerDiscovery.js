@@ -18,7 +18,7 @@ class PeerDiscovery extends EventEmitter {
         this._destroyed = false
         this._dhtAnnouncing = false
         this._dhtTimeout = false
-
+        this._peerDiscoveryTimeout = 0;
 
         this._onWarning = function (err) {
             this.emit('warning', err)
@@ -26,11 +26,21 @@ class PeerDiscovery extends EventEmitter {
         this._onError = function (err) {
             this.emit('error', err)
         }.bind(this);
+
+
         this._onDHTPeer = function (peer, infoHash, from) {
             if (infoHash.toString('hex') !== this._infohash)
                 return;
 
+            clearTimeout(this._peerDiscoveryTimeout);
+
             this.emit('peer', peer, infoHash, from);
+
+            this._peerDiscoveryTimeout = setTimeout(function () {
+                this.emit('discoveryEnded', infoHash);
+                this.destroy();
+            }.bind(this), 5000)
+
         }.bind(this);
 
 

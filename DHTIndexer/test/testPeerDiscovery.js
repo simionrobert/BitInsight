@@ -3,7 +3,7 @@ const INFO_HASH = '5636cd5dadf6672ae29e538e5c82ed5e4a2bd562';   // ubuntu-16.04.
 
 var DEFAULT_PEER_DISCOVERY_OPTIONS = {
     port: 6881,
-    intervalMs: 1000,
+    intervalMs: 15 * 60 * 1000,
     dht: false 
 };
 

@@ -11,7 +11,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>bb3ae382-34e5-4b49-bd9a-74d9c07543a7</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>test\testMetadataFetcher.js</StartupFile>
+    <StartupFile>lib\ESIndexer.js</StartupFile>
     <StartWebBrowser>False</StartWebBrowser>
     <SearchPath>
     </SearchPath>
@@ -28,7 +28,19 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="lib\Manager.js">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="lib\ESIndexer.js">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="index.js">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="lib\dbConnection.js">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="test\testManager.js">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="test\testDHTIndexer.js">
