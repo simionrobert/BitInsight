@@ -2,18 +2,10 @@
 
 var MetadataFetcher = require('../lib/MetadataFetcher');
 var PeerDiscovery = require('../lib/PeerDiscovery');
+var config = require('../../config');
 
-var DEFAULT_PEER_DISCOVERY_OPTIONS = {
-        port: 6881,
-        intervalMs: 15 * 60 * 1000,
-        dht: false
-}
 
-var DEFAULT_METADATA_FETCHER_OPTIONS = {
-    peerDiscovery: null
-}
-
-var peerDiscovery = new PeerDiscovery(DEFAULT_PEER_DISCOVERY_OPTIONS);
+var peerDiscovery = new PeerDiscovery(config.DEFAULT_PEER_DISCOVERY_OPTIONS);
 
 peerDiscovery.on('peer', function (peer, infoHash, from) {
     console.log('found potential peer ' + peer.host + ':' + peer.port + ' through ' + from.address + ':' + from.port);
@@ -29,7 +21,7 @@ var DEFAULT_METADATA_FETCHER_OPTIONS = {
 
 var metadataFetcher = new MetadataFetcher(DEFAULT_METADATA_FETCHER_OPTIONS);
 
-metadataFetcher.on('metadata', function (name, files, remoteAddress) {
+metadataFetcher.on('metadata', function (infohash,name, files, remoteAddress) {
     console.log('\nTorrent found: ' + name);
     console.log('From: ' + remoteAddress);
     console.log('Files: ' );

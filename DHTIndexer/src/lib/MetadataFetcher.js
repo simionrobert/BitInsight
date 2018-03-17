@@ -15,32 +15,32 @@ class MetadataFetcher extends EventEmitter {
         if (!(this instanceof MetadataFetcher))
             return new MetadataFetcher(opts);
 
+        this.peerDiscovery = opts.peerDiscovery;
+
         this.selfID = utils.generateRandomID();
+        this.peerQueue = [];
         this.files = [];
         this.torrentName = null;
         this.metadataGot = false;
 
-        if (opts.peerDiscovery != undefined)
-            this.peerDiscovery = opts.peerDiscovery;
-        else if (opts.DEFAULT_PEER_DISCOVERY_OPTIONS === undefined) 
-            this.peerDiscovery = new PeerDiscovery({ port: 6881, dht: false });
-        else 
-            this.peerDiscovery = new PeerDiscovery(opts.DEFAULT_PEER_DISCOVERY_OPTIONS);
+        this.on('download', this._downloadMetadata)
 
         this._onDHTPeer = function (peer, infoHash, from) {
-            this._getMetadata(peer, infoHash);
+            this.peerQueue.push(peer);
+            this.emit('download',peer, infoHash);
         }.bind(this);
 
         this.peerDiscovery.on('peer', this._onDHTPeer);
     }
 
     getMetadata(infohash) {
+        this.peerDiscovery.on('peer', this._onDHTPeer);
         this.peerDiscovery.lookup(infohash);
     }
 
-    _getMetadata(peer, infoHash) {
+    _downloadMetadata(peer, infoHash) {
         const socket = new net.Socket();
-        socket.on('error', err => { socket.destroy(); });
+
         socket.setTimeout(5000);
 
         this._onPeerConnected = function () {
@@ -55,21 +55,31 @@ class MetadataFetcher extends EventEmitter {
                     wire.ut_metadata.fetch();
                 });
 
-                var _onMetadataArrived = function (rawMetadata) {
+                var _onMetadataArrived = function (rawMetadata,infohash) {
                     if (!this.metadataGot) {
                         this.metadataGot = true;
                         this._parseMetadata(rawMetadata);
 
-                        this.emit('metadata', this.torrentName, this.files, socket.remoteAddress)
+                        this.emit('metadata', infohash, this.torrentName, this.files, socket.remoteAddress)
+
                         this.peerDiscovery.removeListener('peer', this._onDHTPeer)
                         wire.ut_metadata.removeListener('metadata', _onMetadataArrived)
+
+                        socket.destroy();
                     }
                 }.bind(this);
-
 
                 wire.ut_metadata.on('metadata', _onMetadataArrived);
             }
         }.bind(this);
+
+        socket.on('error', err => { socket.destroy(); });
+
+        socket.on('timeout', err => { socket.destroy(); });
+
+        socket.once('close', function () {
+            
+        }.bind(this));
 
         socket.connect(peer.port, peer.host, this._onPeerConnected);
     }

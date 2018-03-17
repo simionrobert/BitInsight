@@ -1,7 +1,7 @@
 {
-  "name": "dhtindexer",
+  "name": "DHTCrawler",
   "version": "0.0.0",
-  "description": "DHTIndexer",
+  "description": "DHTCrawler",
   "main": "app.js",
   "author": {
     "name": "Baal"

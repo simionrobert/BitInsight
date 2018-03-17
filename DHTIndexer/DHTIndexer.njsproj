@@ -11,7 +11,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>bb3ae382-34e5-4b49-bd9a-74d9c07543a7</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>lib\ESIndexer.js</StartupFile>
+    <StartupFile>src\test\testMetadataFetcher.js</StartupFile>
     <StartWebBrowser>False</StartWebBrowser>
     <SearchPath>
     </SearchPath>
@@ -28,47 +28,45 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="lib\Manager.js">
+    <Compile Include="config.js">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="lib\ESIndexer.js">
+    <Compile Include="src\lib\BTClient.js">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="index.js">
+    <Compile Include="src\lib\Elasticsearch.js">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="lib\dbConnection.js">
+    <Compile Include="src\index.js">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="test\testManager.js">
+    <Compile Include="src\test\testDHTCrawler.js">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="test\testDHTIndexer.js">
+    <Compile Include="src\lib\DHTCrawler.js" />
+    <Compile Include="src\lib\MetadataFetcher.js" />
+    <Compile Include="src\lib\RoutingTable.js">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="lib\DHTIndexer.js" />
-    <Compile Include="lib\MetadataFetcher.js" />
-    <Compile Include="lib\routingTable.js">
+    <Compile Include="src\lib\utils.js">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="lib\utils.js">
+    <Compile Include="src\lib\PeerDiscovery.js">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="lib\PeerDiscovery.js">
+    <Compile Include="src\test\testMetadataFetcher.js">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="test\testMetadataFetcher.js">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="test\testPeerDiscovery.js">
+    <Compile Include="src\test\testPeerDiscovery.js">
       <SubType>Code</SubType>
     </Compile>
     <Content Include="package.json" />
     <Content Include="README.md" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="lib\" />
-    <Folder Include="test\" />
+    <Folder Include="src\lib\" />
+    <Folder Include="src\" />
+    <Folder Include="src\test\" />
   </ItemGroup>
   <!-- Do not delete the following Import Project.  While this appears to do nothing it is a marker for setting TypeScript properties before our import that depends on them. -->
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="False" />

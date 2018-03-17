@@ -11,7 +11,7 @@ var BOOTSTRAP_NODES = [
     ['dht.transmissionbt.com', 6881]
 ];
 
-class DHTIndexer extends EventEmitter {
+class DHTCrawler extends EventEmitter {
 
     constructor(options) {
         super();
@@ -114,7 +114,7 @@ class DHTIndexer extends EventEmitter {
                         listInfohash.push(infohash);
                     }
 
-                    this.emit('sampleInfohashResponse', listInfohash, rinfo);
+                    this._emitStandardForm(listInfohash, rinfo,1);
                     this.onFindNodeResponse(msg.r.nodes);
                 }
             }
@@ -139,14 +139,14 @@ class DHTIndexer extends EventEmitter {
                 // infohash catched
                 // TODO: respond properly
                 
-                this.emit('infohash', msg.a.info_hash,rinfo);
+                this._emitStandardForm(msg.a.info_hash, rinfo,0);
                 this.onGetPeersRequest(msg, rinfo);
             }
             else if (msg.y == 'q' && msg.q == 'announce_peer') {
 
                 // infohash catched
                 // TODO: respond properly
-                this.emit('infohash', msg.a.info_hash, rinfo);
+                this._emitStandardForm(msg.a.info_hash, rinfo,0);
                 this.onAnnouncePeerRequest(msg, rinfo);
             }
         }
@@ -296,6 +296,19 @@ class DHTIndexer extends EventEmitter {
             }
         }, rinfo);
     }
+
+    _emitStandardForm(infohash,rinfo,type) {
+        if (type) {
+            this.emit('infohash', infohash, rinfo);
+        } else {
+            var listInfohash = [];
+            listInfohash.push(infohash);
+
+            this.emit('infohash', listInfohash, rinfo);
+        }
+        
+    }
 }
 
-module.exports = DHTIndexer;
+module.exports = DHTCrawler;
+

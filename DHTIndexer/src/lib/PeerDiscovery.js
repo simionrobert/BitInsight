@@ -13,11 +13,13 @@ class PeerDiscovery extends EventEmitter {
       
 
         this._port = opts.port ? opts.port : 20000; // torrent port
-        this._intervalMs = opts.intervalMs || (15 * 60 * 1000) //15 minutes
+        this._intervalAnnounceMs = opts.intervalMs || (15 * 60 * 1000) //15 minutes
+        this._intervalDiscoveryTimeoutMS = opts.intervalDiscoveryTimeoutMS || 3000;
 
         this._destroyed = false
         this._dhtAnnouncing = false
-        this._dhtTimeout = false
+
+        this._dhtAnnounceTimeout = 0
         this._peerDiscoveryTimeout = 0;
 
         this._onWarning = function (err) {
@@ -37,9 +39,11 @@ class PeerDiscovery extends EventEmitter {
             this.emit('peer', peer, infoHash, from);
 
             this._peerDiscoveryTimeout = setTimeout(function () {
+
+                this.dht.removeListener('peer', this._onDHTPeer);
                 this.emit('discoveryEnded', infoHash);
-                this.destroy();
-            }.bind(this), 5000)
+
+            }.bind(this), this._intervalDiscoveryTimeoutMS)
 
         }.bind(this);
 
@@ -54,14 +58,14 @@ class PeerDiscovery extends EventEmitter {
             this.dht.listen(this._port)
         }
 
-        if (this.dht) {
-            this.dht.on('peer', this._onDHTPeer)
-        }
     }
 
     lookup(infohash) {
 
         //entry point
+        if (this.dht) {
+            this.dht.on('peer', this._onDHTPeer)
+        }
         this._infohash = infohash;
         this.dht.lookup(infohash);
         this.dhtAnnounce();
@@ -75,7 +79,7 @@ class PeerDiscovery extends EventEmitter {
 
         console.log('Announcing');
         this._dhtAnnouncing = true;
-        clearTimeout(this._dhtTimeout);
+        clearTimeout(this._dhtAnnounceTimeout);
 
         this.dht.announce(this._infohash, this._port, function (err) {
             this._dhtAnnouncing = false
@@ -86,12 +90,12 @@ class PeerDiscovery extends EventEmitter {
             if (!this._destroyed) {
                 this.emit('dhtAnnounce')
 
-                this._dhtTimeout = setTimeout(function () {
+                this._dhtAnnounceTimeout = setTimeout(function () {
                     this.dhtAnnounce()
                 }.bind(this), this._getRandomTimeout())
 
-                if (this._dhtTimeout.unref)
-                    this._dhtTimeout.unref()
+                if (this._dhtAnnounceTimeout.unref)
+                    this._dhtAnnounceTimeout.unref()
             }
         }.bind(this));
     }
@@ -101,7 +105,7 @@ class PeerDiscovery extends EventEmitter {
             return
         this._destroyed = true
 
-        clearTimeout(this._dhtTimeout)
+        clearTimeout(this._dhtAnnounceTimeout)
 
         this.dht.removeListener('peer', this._onDHTPeer)
         this.dht.removeListener('warning', this._onWarning)
@@ -114,7 +118,7 @@ class PeerDiscovery extends EventEmitter {
 
     // Returns timeout interval, with some random jitter
     _getRandomTimeout() {
-        return this._intervalMs + Math.floor(Math.random() * this._intervalMs / 5)
+        return this._intervalAnnounceMs + Math.floor(Math.random() * this._intervalAnnounceMs / 5)
     }
 }
 
