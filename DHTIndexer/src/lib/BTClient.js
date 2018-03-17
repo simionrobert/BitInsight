@@ -4,47 +4,43 @@ var EventEmitter = require('events')
 var MetadataFetcher = require('./MetadataFetcher');
 var PeerDiscovery = require('./PeerDiscovery');
 
-
+// TODO: Insert to db IPs distinct to metadata
 class BTClient extends EventEmitter{
     constructor(opts) {
         super();
         if (!(this instanceof BTClient))
             return new BTClient(opts);
 
-
-        this._peerDiscovery = new PeerDiscovery(opts.DEFAULT_PEER_DISCOVERY_OPTIONS);
-
-        DEFAULT_METADATA_FETCHER_OPTIONS = {
-            peerDiscovery: this._peerDiscovery
-        }
-        this._metadataFetcher = new MetadataFetcher(DEFAULT_METADATA_FETCHER_OPTIONS);
-
-        this._dataReady = false
-        this.name = "";
-        this.files = [];
-        this.listIP = [];
         this.cache = [];
         this.serviceStartedFlag = false;
-  
 
-        this._peerDiscovery.on('peer', function (peer, infoHash, from) {
+        this._dataReady = false
+        this.listIP = [];
+        this.name = "";
+        this.files = [];
+
+
+        this._peerDiscovery = new PeerDiscovery(opts.DEFAULT_PEER_DISCOVERY_OPTIONS);
+        this._metadataFetcher = new MetadataFetcher(opts.DEFAULT_METADATA_FETCHER_OPTIONS, this._peerDiscovery);
+
+        this._peerDiscovery.on('peer', function (peer, infohash, from) {
             this.listIP.push(peer);
         }.bind(this));
 
-        this._peerDiscovery.on('discoveryEnded', function (infoHash) {
+        this._peerDiscovery.on('discoveryEnded', function (infohash) {
             if (this._dataReady == true) {
-                this._infoDone(this.name, this.files)
-               
+                this._infoDone(infohash,this.name, this.files)
                 return;
             }
                
             this._dataReady = true
         }.bind(this));
 
-        this._metadataFetcher.on('metadata', function (infohash,name, files, remoteAddress) {
+
+        this._metadataFetcher.on('metadata', function ( infohash, name, files, remoteAddress) {
             if (this._dataReady == true)
             {
-                this._infoDone(name, files)
+                this._infoDone(infohash,name, files)
 
                 return;
             }
@@ -54,13 +50,21 @@ class BTClient extends EventEmitter{
 
             this._dataReady = true
         }.bind(this));
+
+        // TODO: To be implemented at metadata
+        this._metadataFetcher.on('timeout', function () {
+            console.log("Metadata timeout")
+            this.startService();
+        }.bind(this));
+
+        this.on('startService', this.startService.bind(this))
     }
 
     addToCache(infohash) {
         this.cache.push(infohash)
 
         if (this.serviceStartedFlag == false) {
-            this.startService();
+            this.emit('startService')
         }
     }
 
@@ -69,27 +73,28 @@ class BTClient extends EventEmitter{
         // get from cache and discover
         if (this.cache.length != 0) {
             this.serviceStartedFlag = true;
+            this.listIP = [];
+            this.name = "";
+            this.files = [];
+            this._dataReady = false;
 
-            this.infohash = this.cache.shift();
+            this._metadataFetcher.getMetadata(this.cache.shift())
 
+        } else {
+            this.serviceStartedFlag = false;
         }
     }
 
-    _infoDone(name, files, listIP) {
+    _infoDone(infohash, name, files, listIP) {
         var torrent = {
-            infohash: this.infohash,
+            infohash: infohash,
             name: name,
             files: files,
             listIP: this.listIP
         }
 
         this.emit('torrent', torrent);
-
-        if (this.cache.length != 0) {
-            this.startService();
-        } else {
-            this.serviceStartedFlag = false;
-        }
+        this.startService();
     }
 }
 

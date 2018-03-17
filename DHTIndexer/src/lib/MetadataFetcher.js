@@ -9,36 +9,46 @@ const bencode = require('bencode');
 const net = require('net');
 const utils = require('./utils');
 
+
+// TODO: Metadata timeout & socket creation optimisation
+
 class MetadataFetcher extends EventEmitter {
-    constructor(opts) {
+    constructor(opts, peerDiscovery) {
         super();
         if (!(this instanceof MetadataFetcher))
-            return new MetadataFetcher(opts);
+            return new MetadataFetcher(peerDiscovery);
 
-        this.peerDiscovery = opts.peerDiscovery;
+        this.peerDiscovery = peerDiscovery;
 
         this.selfID = utils.generateRandomID();
-        this.peerQueue = [];
+        this.timeout = opts.timeout;
+
+        this.on('download', this._downloadMetadata)
+
+        this._onDHTPeer = function (peer, infohash, from) {
+            this.emit('download',peer, infohash);
+        }.bind(this);
+    }
+
+    getMetadata(infohash) {
+
+        //timeout metadata nou found
+        this.timeout = setTimeout(function () {
+            this.peerDiscovery.removeListener('peer', this._onDHTPeer);
+            this.metadataGot = true;
+            this.emit('timeout', infohash);
+        }.bind(this), 7000)
+
+
         this.files = [];
         this.torrentName = null;
         this.metadataGot = false;
 
-        this.on('download', this._downloadMetadata)
-
-        this._onDHTPeer = function (peer, infoHash, from) {
-            this.peerQueue.push(peer);
-            this.emit('download',peer, infoHash);
-        }.bind(this);
-
-        this.peerDiscovery.on('peer', this._onDHTPeer);
-    }
-
-    getMetadata(infohash) {
         this.peerDiscovery.on('peer', this._onDHTPeer);
         this.peerDiscovery.lookup(infohash);
     }
 
-    _downloadMetadata(peer, infoHash) {
+    _downloadMetadata(peer, infohash) {
         const socket = new net.Socket();
 
         socket.setTimeout(5000);
@@ -50,14 +60,16 @@ class MetadataFetcher extends EventEmitter {
                 socket.pipe(wire).pipe(socket);
                 wire.use(ut_metadata());
 
-                wire.handshake(infoHash, this.selfID, { dht: true });
-                wire.on('handshake', function (infoHash, peerId) {
+                wire.handshake(infohash, this.selfID, { dht: true });
+                wire.on('handshake', function (infohash, peerId) {
                     wire.ut_metadata.fetch();
                 });
 
-                var _onMetadataArrived = function (rawMetadata,infohash) {
+                var _onMetadataArrived = function (rawMetadata) {
                     if (!this.metadataGot) {
                         this.metadataGot = true;
+                        clearTimeout(this.timeout);
+
                         this._parseMetadata(rawMetadata);
 
                         this.emit('metadata', infohash, this.torrentName, this.files, socket.remoteAddress)
@@ -69,6 +81,7 @@ class MetadataFetcher extends EventEmitter {
                     }
                 }.bind(this);
 
+
                 wire.ut_metadata.on('metadata', _onMetadataArrived);
             }
         }.bind(this);
@@ -76,10 +89,6 @@ class MetadataFetcher extends EventEmitter {
         socket.on('error', err => { socket.destroy(); });
 
         socket.on('timeout', err => { socket.destroy(); });
-
-        socket.once('close', function () {
-            
-        }.bind(this));
 
         socket.connect(peer.port, peer.host, this._onPeerConnected);
     }

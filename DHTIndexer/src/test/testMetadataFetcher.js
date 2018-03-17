@@ -7,19 +7,15 @@ var config = require('../../config');
 
 var peerDiscovery = new PeerDiscovery(config.DEFAULT_PEER_DISCOVERY_OPTIONS);
 
-peerDiscovery.on('peer', function (peer, infoHash, from) {
+peerDiscovery.on('peer', function (peer, infohash, from) {
     console.log('found potential peer ' + peer.host + ':' + peer.port + ' through ' + from.address + ':' + from.port);
 });
-peerDiscovery.on('discoveryEnded', function (peer, infoHash, from) {
+peerDiscovery.on('discoveryEnded', function (peer, infohash, from) {
     console.log('Discovery ended ');
 }.bind(this));
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-var DEFAULT_METADATA_FETCHER_OPTIONS = {
-    peerDiscovery: peerDiscovery
-}
-
-var metadataFetcher = new MetadataFetcher(DEFAULT_METADATA_FETCHER_OPTIONS);
+var metadataFetcher = new MetadataFetcher(peerDiscovery);
 
 metadataFetcher.on('metadata', function (infohash,name, files, remoteAddress) {
     console.log('\nTorrent found: ' + name);
@@ -29,8 +25,6 @@ metadataFetcher.on('metadata', function (infohash,name, files, remoteAddress) {
     for (let i = 0; i < files.length; i++) {
         console.log('\t'+files[i].name);
     }
-
-
 });
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

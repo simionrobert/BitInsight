@@ -1,9 +1,9 @@
 ﻿'use strict'
 
 var config = require('../config');
-var ElasticSearch = require('../lib/ElasticSearch');
-var DHTCrawler = require('./DHTCrawler');
-var BTClient = require('./BTClient');
+var ElasticSearch = require('./lib/Elasticsearch');
+var DHTCrawler = require('./lib/DHTCrawler');
+var BTClient = require('./lib/BTClient');
 
 
 var indexer = new ElasticSearch(config.DEFAULT_ELASTIC_SEARCH_OPTIONS);
@@ -18,7 +18,8 @@ crawler.on('infohash', function (listInfohash, rinfo) {
         btClient.addToCache(listInfohash[i].toString("hex"))
     }
 });
+
 btClient.on('torrent', indexer.indexTorrent.bind(indexer));
-
-
-crawler.start();
+btClient.addToCache('5636cd5dadf6672ae29e538e5c82ed5e4a2bd562')
+btClient.addToCache('726b4809351adf6fedc6ad779762829bf5512ae1')
+//crawler.start();
