@@ -31,7 +31,6 @@ class MetadataFetcher extends EventEmitter {
         this._onDHTPeer = function (peer, infohash, from) {
             if (this.infohash == infohash.toString('hex'))
                 this.emit('download', peer, infohash);
-
         }.bind(this);
     }
 

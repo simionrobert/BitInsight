@@ -17,7 +17,7 @@
     },
 
     DEFAULT_METADATA_FETCHER_OPTIONS: {
-        timeout: 10000,
+        timeout: 15000,
         socketTimeout: 5000
     },
     
@@ -36,8 +36,11 @@ module.exports = config;
 
 /*
 Updates:
+- Veriy Peer Discover conccurent
+- Make distict list IPs
+
+Done:
 - DHTCrawl & PD+MF different processes save & updates different indexes
-- 2 Indexes: Torrent and IP
 - means of saving state: count (id in IP index)
 - To be perfect: Make peer Discovery independent of infohash (multiple infohashes same time). Discuss with creator+propose
 - IP index, PD updates docs by id
