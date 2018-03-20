@@ -29,8 +29,12 @@ class MetadataFetcher extends EventEmitter {
         this.on('download', this._downloadMetadata)
 
         this._onDHTPeer = function (peer, infohash, from) {
-            if (this.infohash == infohash.toString('hex'))
+            if (this.infohash == infohash.toString('hex')) {
+
+                //Need to do sth to reduce nr of sockets opened
                 this.emit('download', peer, infohash);
+            }
+
         }.bind(this);
     }
 
@@ -43,16 +47,24 @@ class MetadataFetcher extends EventEmitter {
         this.metadataGot = false;
         this.peerDiscovery.on('peer', this._onDHTPeer);
 
+       
+
+        // start process
+        this.peerDiscovery.lookup(infohash); 
+    }
+
+    _setMetadataTimeout() {
         this.remainingSec = setTimeout(function () {
             this.peerDiscovery.removeListener('peer', this._onDHTPeer);
             this.metadataGot = true; //not really, but makes the thing that i want
 
+            this.socketList.forEach(function (socket) {
+                socket.destroy();
+            })
+            this.socketList = []
+
             this.emit('timeout', this.infohash);
         }.bind(this), this.timeout)
-
-
-        // start process
-        this.peerDiscovery.lookup(infohash); 
     }
 
     //seems ok. Too many sockets opened

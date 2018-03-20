@@ -12,7 +12,7 @@
 
     DEFAULT_PEER_DISCOVERY_OPTIONS : {
         port: 6880,
-        timeout: 5000,
+        timeout: 8000,
         dht: false
     },
 
