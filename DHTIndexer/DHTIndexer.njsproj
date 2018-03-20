@@ -11,7 +11,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>bb3ae382-34e5-4b49-bd9a-74d9c07543a7</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>src\index.js</StartupFile>
+    <StartupFile>src\test\testPeerDiscovery.js</StartupFile>
     <StartWebBrowser>False</StartWebBrowser>
     <SearchPath>
     </SearchPath>
@@ -40,6 +40,12 @@
     <Compile Include="src\index.js">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="src\master.js">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\slave.js">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="src\test\testBTClient.js">
       <SubType>Code</SubType>
     </Compile>
@@ -57,12 +63,16 @@
     <Compile Include="src\lib\PeerDiscovery.js">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="src\test\testElasticSearch.js">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="src\test\testMetadataFetcher.js">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\test\testPeerDiscovery.js">
       <SubType>Code</SubType>
     </Compile>
+    <Content Include="id.txt" />
     <Content Include="package.json" />
     <Content Include="README.md" />
   </ItemGroup>

@@ -18,7 +18,8 @@
     },
 
     DEFAULT_METADATA_FETCHER_OPTIONS: {
-        timeout: 7000
+        timeout: 10000,
+        socketTimeout: 5000
     },
     
     DEFAULT_ELASTIC_SEARCH_OPTIONS: {
@@ -26,8 +27,20 @@
             host: 'localhost:9200',
             log: 'trace'
         },
-        batchSize: 2
+        batchSizeDHT: 100,
+        batchSizeTorrent:10
     }
 };
 
 module.exports = config;
+
+
+/*
+Updates:
+- DHTCrawl & PD+MF different processes save & updates different indexes
+- 2 Indexes: Torrent and IP
+- means of saving state: count (id in IP index)
+- To be perfect: Make peer Discovery independent of infohash (multiple infohashes same time). Discuss with creator+propose
+- IP index, PD updates docs by id
+- DHT Crawl cache & bulk + transmit partial cache after a timeout
+*/

@@ -19,39 +19,49 @@ class MetadataFetcher extends EventEmitter {
             return new MetadataFetcher(peerDiscovery);
 
         this.peerDiscovery = peerDiscovery;
-
         this.selfID = utils.generateRandomID();
+        this.socketList = [];
+
         this.timeout = opts.timeout;
+        this.socketTimeout = opts.socketTimeout;
+        this.remainingSec = 0;
 
         this.on('download', this._downloadMetadata)
 
         this._onDHTPeer = function (peer, infohash, from) {
-            this.emit('download',peer, infohash);
+            if (this.infohash == infohash.toString('hex'))
+                this.emit('download', peer, infohash);
+
         }.bind(this);
     }
 
+    // Only function to be called
     getMetadata(infohash) {
+        this.infohash = infohash;
 
-        //timeout metadata nou found
-        this.timeout = setTimeout(function () {
-            this.peerDiscovery.removeListener('peer', this._onDHTPeer);
-            this.metadataGot = true;
-            this.emit('timeout', infohash);
-        }.bind(this), 7000)
-
-
-        this.files = [];
         this.torrentName = null;
+        this.files = [];
         this.metadataGot = false;
-
         this.peerDiscovery.on('peer', this._onDHTPeer);
-        this.peerDiscovery.lookup(infohash);
+
+        this.remainingSec = setTimeout(function () {
+            this.peerDiscovery.removeListener('peer', this._onDHTPeer);
+            this.metadataGot = true; //not really, but makes the thing that i want
+
+            this.emit('timeout', this.infohash);
+        }.bind(this), this.timeout)
+
+
+        // start process
+        this.peerDiscovery.lookup(infohash); 
     }
 
+    //seems ok. Too many sockets opened
     _downloadMetadata(peer, infohash) {
         const socket = new net.Socket();
+        this.socketList.push(socket);
 
-        socket.setTimeout(5000);
+        socket.setTimeout(this.socketTimeout);
 
         this._onPeerConnected = function () {
             if (!this.metadataGot) {
@@ -61,28 +71,27 @@ class MetadataFetcher extends EventEmitter {
                 wire.use(ut_metadata());
 
                 wire.handshake(infohash, this.selfID, { dht: true });
+
                 wire.on('handshake', function (infohash, peerId) {
                     wire.ut_metadata.fetch();
                 });
 
-                var _onMetadataArrived = function (rawMetadata) {
+                wire.ut_metadata.on('metadata', function (rawMetadata) {
                     if (!this.metadataGot) {
+                        clearTimeout(this.remainingSec);
                         this.metadataGot = true;
-                        clearTimeout(this.timeout);
-
-                        this._parseMetadata(rawMetadata);
-
-                        this.emit('metadata', infohash, this.torrentName, this.files, socket.remoteAddress)
 
                         this.peerDiscovery.removeListener('peer', this._onDHTPeer)
-                        wire.ut_metadata.removeListener('metadata', _onMetadataArrived)
 
-                        socket.destroy();
+                        this._parseMetadata(rawMetadata);
+                        this.emit('metadata', infohash, this.torrentName, this.files, socket.remoteAddress)
+
+                        this.socketList.forEach(function (socket) {
+                            socket.destroy();
+                        })
+                        this.socketList = []
                     }
-                }.bind(this);
-
-
-                wire.ut_metadata.on('metadata', _onMetadataArrived);
+                }.bind(this));
             }
         }.bind(this);
 

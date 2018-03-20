@@ -31,15 +31,12 @@ class PeerDiscovery extends EventEmitter {
 
 
         this._onDHTPeer = function (peer, infohash, from) {
-            if (infohash.toString('hex') !== this._infohash)
-                return;
-
             clearTimeout(this._peerDiscoveryTimeout);
 
             this.emit('peer', peer, infohash, from);
 
             this._peerDiscoveryTimeout = setTimeout(function () {
-                this.emit('discoveryEnded', infohash );
+                this.emit('discoveryEnded', infohash);
             }.bind(this), this._intervalDiscoveryTimeoutMS)
 
         }.bind(this);
@@ -62,9 +59,6 @@ class PeerDiscovery extends EventEmitter {
 
     lookup(infohash) {
 
-        //entry point. One infohash/time
-        this._infohash = infohash;
-
         this._dhtAnnouncing = false
         clearTimeout(this._dhtAnnounceTimeout);
         clearTimeout(this._peerDiscoveryTimeout);
@@ -73,17 +67,17 @@ class PeerDiscovery extends EventEmitter {
         this.dhtAnnounce();
     }
 
-    dhtAnnounce() {
+    dhtAnnounce(infohash) {
         //Announce that the peer, controlling the querying node, is downloading a torrent on a port.
 
         if (this._dhtAnnouncing)
             return;
 
-        console.log('Announcing');
+        console.log('Announcing peer downloads infohash');
         this._dhtAnnouncing = true;
         clearTimeout(this._dhtAnnounceTimeout);
 
-        this.dht.announce(this._infohash, this._port, function (err) {
+        this.dht.announce(infohash, this._port, function (err) {
             this._dhtAnnouncing = false
 
             if (err)
@@ -93,7 +87,7 @@ class PeerDiscovery extends EventEmitter {
                 this.emit('dhtAnnounce')
 
                 this._dhtAnnounceTimeout = setTimeout(function () {
-                    this.dhtAnnounce()
+                    this.dhtAnnounce(infohash)
                 }.bind(this), this._getRandomTimeout())
 
                 if (this._dhtAnnounceTimeout.unref)
