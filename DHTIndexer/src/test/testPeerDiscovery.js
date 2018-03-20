@@ -10,8 +10,8 @@ var count = 1;
 peerDiscovery.on('peer', function (peer, infohash, from) {
     console.log('Infohash: ' + infohash.toString("hex") + ' found potential peer ' + peer.host + ':' + peer.port + ' through ' + from.address + ':' + from.port);
 });
-peerDiscovery.on('discoveryEnded', function (peer, infohash, from) {
-    console.log('Discovery ended ');
+peerDiscovery.on('discoveryEnded', function (infohash) {
+    console.log('Discovery ended for ', infohash.toString('hex'));
     //if ( count == 1) { 
     //    count++
     //    peerDiscovery.lookup(INFO_HASH2);

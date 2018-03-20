@@ -12,8 +12,7 @@
 
     DEFAULT_PEER_DISCOVERY_OPTIONS : {
         port: 6880,
-        intervalMs: 15 * 60 * 1000,
-        intervalDiscoveryTimeoutMS: 3000,
+        timeout: 5000,
         dht: false
     },
 
