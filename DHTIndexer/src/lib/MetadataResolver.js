@@ -38,8 +38,6 @@ class MetadataResolver extends EventEmitter {
             }
 
         }.bind(this);
-
-        this.peerDiscovery.on('peer', this._onDHTPeer);
     }
 
     // Only function to be called
@@ -47,6 +45,7 @@ class MetadataResolver extends EventEmitter {
         this.currentInfohash = infohash;
         this._setMetadataTimeout();
 
+        this.peerDiscovery.on('peer', this._onDHTPeer);
         this.peerDiscovery.lookup(infohash);
     }
 
@@ -57,6 +56,7 @@ class MetadataResolver extends EventEmitter {
                 socket.destroy();
             })
             this.socketList = []
+            this.peerDiscovery.removeListener('peer', this._onDHTPeer);
 
             this.emit('timeout', this.currentInfohash);
         }.bind(this), this.timeout)
@@ -83,18 +83,21 @@ class MetadataResolver extends EventEmitter {
                     wire.ut_metadata.fetch();
                 });
 
-                wire.ut_metadata.on('metadata', function (rawMetadata) {
+                wire.ut_metadata.once('metadata', function (rawMetadata) {
+                    if (this.socketList.length != 0) {
+                        //maybe sokcet destroy is not cooreect based on event loop
+                        clearTimeout(this.remainingSec);
 
-                    //maybe sokcet destroy is not cooreect based on event loop
-                    clearTimeout(this.remainingSec);
+                        this.peerDiscovery.removeListener('peer', this._onDHTPeer);
 
-                    this.socketList.forEach(function (socket) {
-                        socket.destroy()
-                    })
-                    this.socketList = []
+                        this.socketList.forEach(function (socket) {
+                            socket.destroy()
+                        })
+                        this.socketList = []
 
-                    var torrent = this._parseMetadata(rawMetadata);
-                    this.emit('metadata', torrent)
+                        var torrent = this._parseMetadata(rawMetadata);
+                        this.emit('metadata', torrent)
+                    }
                 }.bind(this));
             }.bind(this);
 
