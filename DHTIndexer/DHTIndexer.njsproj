@@ -11,7 +11,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>bb3ae382-34e5-4b49-bd9a-74d9c07543a7</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>src\test\testMetadataFetcher.js</StartupFile>
+    <StartupFile>src\test\testBTClient.js</StartupFile>
     <StartWebBrowser>False</StartWebBrowser>
     <SearchPath>
     </SearchPath>
@@ -53,7 +53,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\lib\DHTCrawler.js" />
-    <Compile Include="src\lib\MetadataFetcher.js" />
+    <Compile Include="src\lib\MetadataResolver.js" />
     <Compile Include="src\lib\RoutingTable.js">
       <SubType>Code</SubType>
     </Compile>
@@ -66,7 +66,7 @@
     <Compile Include="src\test\testElasticSearch.js">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\test\testMetadataFetcher.js">
+    <Compile Include="src\test\testMetadataResolver.js">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\test\testPeerDiscovery.js">

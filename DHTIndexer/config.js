@@ -36,8 +36,7 @@ module.exports = config;
 
 /*
 Updates:
-- Veriy Peer Discover conccurent
-- Make distict list IPs
+- Implement Batch Metadata download
 
 Done:
 - DHTCrawl & PD+MF different processes save & updates different indexes
@@ -45,4 +44,5 @@ Done:
 - To be perfect: Make peer Discovery independent of infohash (multiple infohashes same time). Discuss with creator+propose
 - IP index, PD updates docs by id
 - DHT Crawl cache & bulk + transmit partial cache after a timeout
+- Veriy Peer Discover conccurent
 */

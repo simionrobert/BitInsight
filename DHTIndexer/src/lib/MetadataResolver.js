@@ -12,15 +12,17 @@ const utils = require('./utils');
 
 // TODO: Metadata timeout & socket creation optimisation
 
-class MetadataFetcher extends EventEmitter {
+class MetadataResolver extends EventEmitter {
     constructor(opts, peerDiscovery) {
         super();
-        if (!(this instanceof MetadataFetcher))
-            return new MetadataFetcher(peerDiscovery);
+        if (!(this instanceof MetadataResolver))
+            return new MetadataResolver(peerDiscovery);
 
         this.peerDiscovery = peerDiscovery;
         this.selfID = utils.generateRandomID();
+
         this.socketList = [];
+        this.currentInfohash = null;
 
         this.timeout = opts.timeout;
         this.socketTimeout = opts.socketTimeout;
@@ -29,53 +31,47 @@ class MetadataFetcher extends EventEmitter {
         this.on('download', this._downloadMetadata)
 
         this._onDHTPeer = function (peer, infohash, from) {
-            if (this.infohash == infohash.toString('hex')) {
+            if (this.currentInfohash == infohash.toString('hex')) {
 
-                //Need to do sth to reduce nr of sockets opened
+                // TODO: Implement Batch download
                 this.emit('download', peer, infohash);
             }
 
         }.bind(this);
+
+        this.peerDiscovery.on('peer', this._onDHTPeer);
     }
 
     // Only function to be called
     getMetadata(infohash) {
-        this.infohash = infohash;
+        this.currentInfohash = infohash;
+        this._setMetadataTimeout();
 
-        this.torrentName = null;
-        this.files = [];
-        this.metadataGot = false;
-        this.peerDiscovery.on('peer', this._onDHTPeer);
-
-       
-
-        // start process
-        this.peerDiscovery.lookup(infohash); 
+        this.peerDiscovery.lookup(infohash);
     }
 
     _setMetadataTimeout() {
         this.remainingSec = setTimeout(function () {
-            this.peerDiscovery.removeListener('peer', this._onDHTPeer);
-            this.metadataGot = true; //not really, but makes the thing that i want
 
             this.socketList.forEach(function (socket) {
                 socket.destroy();
             })
             this.socketList = []
 
-            this.emit('timeout', this.infohash);
+            this.emit('timeout', this.currentInfohash);
         }.bind(this), this.timeout)
     }
 
     //seems ok. Too many sockets opened
     _downloadMetadata(peer, infohash) {
-        const socket = new net.Socket();
-        this.socketList.push(socket);
+        if (this.currentInfohash == infohash.toString('hex')) {
 
-        socket.setTimeout(this.socketTimeout);
+            const socket = new net.Socket();
+            this.socketList.push(socket);
 
-        this._onPeerConnected = function () {
-            if (!this.metadataGot) {
+            socket.setTimeout(this.socketTimeout);
+
+            this._onPeerConnected = function () {
                 const wire = new Protocol();
 
                 socket.pipe(wire).pipe(socket);
@@ -88,41 +84,39 @@ class MetadataFetcher extends EventEmitter {
                 });
 
                 wire.ut_metadata.on('metadata', function (rawMetadata) {
-                    if (!this.metadataGot) {
-                        clearTimeout(this.remainingSec);
-                        this.metadataGot = true;
 
-                        this.peerDiscovery.removeListener('peer', this._onDHTPeer)
+                    //maybe sokcet destroy is not cooreect based on event loop
+                    clearTimeout(this.remainingSec);
 
-                        this._parseMetadata(rawMetadata);
-                        this.emit('metadata', infohash, this.torrentName, this.files, socket.remoteAddress)
+                    this.socketList.forEach(function (socket) {
+                        socket.destroy()
+                    })
+                    this.socketList = []
 
-                        this.socketList.forEach(function (socket) {
-                            socket.destroy();
-                        })
-                        this.socketList = []
-                    }
+                    var torrent = this._parseMetadata(rawMetadata);
+                    this.emit('metadata', torrent)
                 }.bind(this));
-            }
-        }.bind(this);
+            }.bind(this);
 
-        socket.on('error', err => { socket.destroy(); });
+            socket.on('error', err => { socket.destroy(); });
+            socket.on('timeout', err => { socket.destroy(); });
 
-        socket.on('timeout', err => { socket.destroy(); });
-
-        socket.connect(peer.port, peer.host, this._onPeerConnected);
+            socket.connect(peer.port, peer.host, this._onPeerConnected);
+        }
     }
 
     _parseMetadata(rawMetadata) {
         var metadata = bencode.decode(rawMetadata).info;
 
-        this.torrentName = metadata.name.toString('utf-8');
+        var torrentName = metadata.name.toString('utf-8');
+        var files = [];
+
         if (metadata.hasOwnProperty('files')) {
 
             // multiple files
             var l = metadata.files.length;
             for (var i = 0; i < l; i++) {
-                this.files.push(
+                files.push(
                     {
                         name: metadata.files[i].path.toString('utf-8'),
                         size: metadata.files[i].length
@@ -131,13 +125,19 @@ class MetadataFetcher extends EventEmitter {
         } else {
 
             // single file
-            this.files.push(
+            files.push(
                 {
                     name: metadata.name.toString('utf-8'),
                     size: metadata.length
                 });
         }
+
+        return {
+            infohash: this.currentInfohash,
+            name: torrentName,
+            files: files
+        }
     }
 }
 
-module.exports = MetadataFetcher;
+module.exports = MetadataResolver;
