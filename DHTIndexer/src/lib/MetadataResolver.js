@@ -85,15 +85,19 @@ class MetadataResolver extends EventEmitter {
 
                 wire.ut_metadata.once('metadata', function (rawMetadata) {
                     if (this.socketList.length != 0) {
-                        //maybe sokcet destroy is not cooreect based on event loop
-                        clearTimeout(this.remainingSec);
 
-                        this.peerDiscovery.removeListener('peer', this._onDHTPeer);
+                        process.nextTick(destroy.bind(this));
 
-                        this.socketList.forEach(function (socket) {
-                            socket.destroy()
-                        })
-                        this.socketList = []
+                        function destroy() {
+                            clearTimeout(this.remainingSec);
+
+                            this.peerDiscovery.removeListener('peer', this._onDHTPeer);
+
+                            this.socketList.forEach(function (socket) {
+                                socket.destroy()
+                            })
+                            this.socketList = []
+                        }
 
                         var torrent = this._parseMetadata(rawMetadata);
                         this.emit('metadata', torrent)

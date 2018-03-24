@@ -73,7 +73,7 @@ class BTClient extends EventEmitter{
         this.semaphore = !this.semaphore;
 
         if (this.semaphore == false) {
-            fs.writeFileSync('id.txt', (this.countInfohashesDone++));
+            fs.writeFile('id.txt', (this.countInfohashesDone++));
             this.startService()
         }
     }
