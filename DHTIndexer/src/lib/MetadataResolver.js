@@ -13,12 +13,11 @@ const utils = require('./utils');
 // TODO: Metadata timeout & socket creation optimisation
 
 class MetadataResolver extends EventEmitter {
-    constructor(opts, peerDiscovery) {
+    constructor(opts) {
         super();
         if (!(this instanceof MetadataResolver))
-            return new MetadataResolver(peerDiscovery);
+            return new MetadataResolver(opts);
 
-        this.peerDiscovery = peerDiscovery;
         this.selfID = utils.generateRandomID();
 
         this.socketList = [];
@@ -41,8 +40,10 @@ class MetadataResolver extends EventEmitter {
     }
 
     // Only function to be called
-    getMetadata(infohash) {
+    getMetadata(infohash, peerDiscovery) {
         this.currentInfohash = infohash;
+        this.peerDiscovery = peerDiscovery;
+
         this._setMetadataTimeout();
 
         this.peerDiscovery.on('peer', this._onDHTPeer);
@@ -52,11 +53,12 @@ class MetadataResolver extends EventEmitter {
     _setMetadataTimeout() {
         this.remainingSec = setTimeout(function () {
 
+            this.peerDiscovery.removeListener('peer', this._onDHTPeer);
+
             this.socketList.forEach(function (socket) {
                 socket.destroy();
             })
             this.socketList = []
-            this.peerDiscovery.removeListener('peer', this._onDHTPeer);
 
             this.emit('timeout', this.currentInfohash);
         }.bind(this), this.timeout)
@@ -86,18 +88,14 @@ class MetadataResolver extends EventEmitter {
                 wire.ut_metadata.once('metadata', function (rawMetadata) {
                     if (this.socketList.length != 0) {
 
-                        process.nextTick(destroy.bind(this));
+                        clearTimeout(this.remainingSec);
 
-                        function destroy() {
-                            clearTimeout(this.remainingSec);
+                        this.peerDiscovery.removeListener('peer', this._onDHTPeer);
 
-                            this.peerDiscovery.removeListener('peer', this._onDHTPeer);
-
-                            this.socketList.forEach(function (socket) {
-                                socket.destroy()
-                            })
-                            this.socketList = []
-                        }
+                        this.socketList.forEach(function (socket) {
+                            socket.destroy()
+                        })
+                        this.socketList = []
 
                         var torrent = this._parseMetadata(rawMetadata);
                         this.emit('metadata', torrent)
