@@ -12,6 +12,7 @@
     "bittorrent-protocol": "^2.4.0",
     "bluebird": "^3.5.1",
     "elasticsearch": "^14.2.0",
+    "lodash": "^4.17.5",
     "magnet-uri": "^5.1.7",
     "ut_metadata": "^3.2.0"
   }

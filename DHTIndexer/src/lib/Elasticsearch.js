@@ -1,5 +1,6 @@
 ﻿'use strict'
 
+const _ = require('lodash');
 var elasticsearch = require('elasticsearch');
 
 class ElasticSearch {
@@ -29,7 +30,9 @@ class ElasticSearch {
 
         var jsonObject = {
                 Name: torrent.name,
-                Search: torrent.name.replace(/\./g, ' ').replace(/\./g, ' '),
+                Search: torrent.name.replace(/\./g, ' ').replace(/_/g, ' '),
+                Type: torrent.type,
+                Categories: torrent.categories,
                 Files: []
         };
 
@@ -178,8 +181,10 @@ class ElasticSearch {
                 "mappings": {
                     "doc": {
                         "properties": {
-                            "Name": { "type": "text"},
-                            "Search": { "type": "text"},
+                            "Name": { "type": "text" },
+                            "Search": { "type": "text" },
+                            "Type": { "type": "text" },
+                            "Categories": { "type": "text" },
                             "Files": {
                                 "properties": {
                                     "Name": { "type": "text" },

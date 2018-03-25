@@ -1,8 +1,12 @@
 ﻿'use strict';
 
-var EventEmitter = require('events')
-var MetadataResolver = require('./MetadataResolver');
-var PeerDiscovery = require('./PeerDiscovery');
+const EventEmitter = require('events')
+const _ = require('lodash');
+const MetadataResolver = require('./MetadataResolver');
+const PeerDiscovery = require('./PeerDiscovery');
+const Categoriser = require('./Categoriser');
+
+
 const fs = require('fs');
 
 
@@ -12,6 +16,7 @@ class BTClient extends EventEmitter{
         if (!(this instanceof BTClient))
             return new BTClient(opts);
 
+        this.categoriser = new Categoriser();
         this.opts = opts
         this.metadataFlag = metadataFlag
         this.ipFlag = ipFlag
@@ -26,16 +31,18 @@ class BTClient extends EventEmitter{
         this._onDiscoveryEnded = function (infohash) {
             var torrent = {
                 infohash: infohash,
-                listIP: this.listIP
+                listIP: _.uniq(this.listIP)
             }
             this.emit('ip', torrent);
             this.nextInfohash();
         }
 
         this._onMetadata = function (torrent, remoteAddress) {
+            torrent = this.categoriser.parse(torrent)
             this.emit('metadata', torrent);
             this.nextInfohash();
         }
+
         this._onMetadataTimeout = function () {
             this.nextInfohash();
         }
