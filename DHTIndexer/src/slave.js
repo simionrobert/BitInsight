@@ -11,14 +11,16 @@ var btClient = new BTClient(config,1,1);
 
 
 btClient.on('metadata', function (torrent) {
-    console.log('\nInfohash ' + torrent.infohash.toString('hex'));
+    var lastInfohashID = btClient.getID()
+    console.log('\n' + btClient.getID() +". Infohash: "+ torrent.infohash.toString('hex'));
     console.log('Torrent sent to batch: ' + torrent.name);
 
     indexer.indexTorrent(torrent)
 });
 
 btClient.on('ip', function (torrent) {
-    console.log('\nInfohash ' + torrent.infohash.toString('hex'));
+    var lastInfohashID = btClient.getID()
+    console.log('\n' + btClient.getID() + ". Infohash: " + torrent.infohash.toString('hex'));
     console.log('List ip sent to batch ' + torrent.listIP.length);
 
 
@@ -30,7 +32,7 @@ btClient.on('cacheEmpty', function () {
 
     var lastInfohashID = btClient.getID()
 
-    indexer.getLastInfohashes(lastInfohashID, lastInfohashID + batchSize - 1, function infohashRetrieved(listInfohashes) {
+    indexer.getLastInfohashes(lastInfohashID+1, lastInfohashID + batchSize, function infohashRetrieved(listInfohashes) {
         btClient.addToCache(listInfohashes);
 
         // Reload service

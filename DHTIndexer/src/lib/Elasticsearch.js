@@ -88,8 +88,8 @@ class ElasticSearch {
         };
 
 
-        this.recordInfohashQueue.push(update);
-        this.recordInfohashQueue(jsonObject);
+        this.recordInfohashQueue.push(index);
+        this.recordInfohashQueue.push(jsonObject);
         this._queue();
     }
 

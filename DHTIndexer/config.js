@@ -12,12 +12,12 @@
 
     DEFAULT_PEER_DISCOVERY_OPTIONS : {
         port: 6880,
-        timeout: 8*1000,
+        timeout: 6*1000,
         dht: false
     },
 
     DEFAULT_METADATA_FETCHER_OPTIONS: {
-        timeout: 9*1000,
+        timeout: 8*1000,
         socketTimeout: 5000
     },
     
