@@ -17,6 +17,7 @@ class Categorizer {
 			type: ''
 		};
 
+
         // Get file with maximum size
         const file = _.maxBy(torrent.files, 'size')
         newTorrent = this.getCategories(file, newTorrent);
@@ -39,7 +40,10 @@ class Categorizer {
         if (this.videoFormats.indexOf(ext) > -1) {
             if (torrent.type === '')
                 torrent.type = 'video';
-			newTorrent = this.getVideoCategories(file, newTorrent);
+            newTorrent = this.getVideoCategories(file, newTorrent);
+
+            //categorise based on torrent name
+            newTorrent = this.getVideoCategories(newTorrent, newTorrent);
 		}
         if (this.audioFormats.indexOf(ext) > -1) {
             if (torrent.type === '')
@@ -70,6 +74,7 @@ class Categorizer {
 		} else {
 			torrent.categories.push('movie');
 		}
+
 
         if (file.name.toLowerCase().indexOf('1080') > -1) {
             torrent.categories.push('1080');
