@@ -103,18 +103,6 @@ class ElasticSearch {
             return;
         }
 
-        if (this.recordTorrentQueue.length / 2 >= this.batchSizeTorrent) {
-
-            this.client.bulk({
-                body: this.recordTorrentQueue
-            }, function (err, resp) {
-                console.log(resp);
-            });
-
-            this.recordTorrentQueue = [];
-            return;
-        }
-
         if (this.recordIPQueue.length / 2 >= this.batchSizeTorrent) {
 
             this.client.bulk({
@@ -123,12 +111,16 @@ class ElasticSearch {
                 console.log(resp);
             });
 
+            this.client.bulk({
+                body: this.recordTorrentQueue
+            }, function (err, resp) {
+                console.log(resp);
+            });
+
+            this.recordTorrentQueue = [];
             this.recordIPQueue = [];
-            return;
         }
     }
-
-
 
 
     decodeGetLastInfohashes(response) {

@@ -4,24 +4,27 @@ const config = require('../config');
 const ElasticSearch = require('./lib/Elasticsearch');
 const BTClient = require('./lib/BTClient');
 
-const batchSize = 20;
+const batchSize = 10;
 
 var indexer = new ElasticSearch(config.DEFAULT_ELASTIC_SEARCH_OPTIONS);
 var btClient = new BTClient(config,1,1);
 
 
-btClient.on('ip', function (torrent) {
-    console.log('\nList ip sent to batch');
-    console.log('Infohash ' + torrent.infohash.toString('hex'));
-    indexer.indexIP(torrent)
-});
-
 btClient.on('metadata', function (torrent) {
-    console.log('\nTorrent sent to batch: ' + torrent.name);
-    console.log('Infohash ' + torrent.infohash.toString('hex'));
+    console.log('\nInfohash ' + torrent.infohash.toString('hex'));
+    console.log('Torrent sent to batch: ' + torrent.name);
 
     indexer.indexTorrent(torrent)
 });
+
+btClient.on('ip', function (torrent) {
+    console.log('\nInfohash ' + torrent.infohash.toString('hex'));
+    console.log('List ip sent to batch ' + torrent.listIP.length);
+
+
+    indexer.indexIP(torrent)
+});
+
 
 btClient.on('cacheEmpty', function () {
 
@@ -31,7 +34,9 @@ btClient.on('cacheEmpty', function () {
         btClient.addToCache(listInfohashes);
 
         // Reload service
-        btClient.startService()
+        if (listInfohashes.length != 0) {
+            btClient.startService()
+        }
     })
 
 })

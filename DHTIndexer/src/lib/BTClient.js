@@ -56,6 +56,7 @@ class BTClient extends EventEmitter{
 
     startService() {
         if (this.cache.length != 0) {
+            this.lastInfohashID++;
             this.listIP = [];
             this.semaphore = false
             var infohash = this.cache.shift();

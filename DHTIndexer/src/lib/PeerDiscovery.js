@@ -46,7 +46,7 @@ class PeerDiscovery extends EventEmitter {
         this._timeoutArrayDiscovery[infohash] = 0;
 
         this.dht.lookup(infohash);
-        this.setInfohashTimeout(infohash, 10*1000 + this.timeout)
+        this.setInfohashTimeout(infohash, this.timeout)
     }
 
     setInfohashTimeout(infohash, timeout) {
