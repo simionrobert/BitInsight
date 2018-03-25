@@ -27,8 +27,6 @@ class ElasticSearch {
             }
         }
 
-
-
         var jsonObject = {
                 Name: torrent.name,
                 Search: torrent.name.replace(/\./g, ' ').replace(/\./g, ' '),

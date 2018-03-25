@@ -4,9 +4,9 @@ var config = require('../../config');
 var BTClient = require('../lib/BTClient');
 
 
-var btClient = new BTClient(config);
+var btClient = new BTClient(config,1,1);
 
-btClient.on('torrentMetadata', function (torrent) {
+btClient.on('metadata', function (torrent) {
 
     console.log('\nTorrent found: ' + torrent.name);
     console.log('Infohash ' + torrent.infohash.toString('hex'));
@@ -18,7 +18,7 @@ btClient.on('torrentMetadata', function (torrent) {
 
 });
 
-btClient.on('torrentIP', function (torrent) {
+btClient.on('ip', function (torrent) {
 
     console.log('IPs: ');
     for (let i = 0; i < torrent.listIP.length; i++) {

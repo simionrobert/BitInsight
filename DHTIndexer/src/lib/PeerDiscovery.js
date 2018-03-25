@@ -55,7 +55,6 @@ class PeerDiscovery extends EventEmitter {
 
                 delete this._timeoutArrayDiscovery[infohash.toString('hex')];
                 this.emit('done', infohash);
-                this.destroy();
             }
         }(infohash).bind(this), timeout)
     }
@@ -68,7 +67,7 @@ class PeerDiscovery extends EventEmitter {
 
         for (var property in this._timeoutArrayDiscovery) {
             if (this._timeoutArrayDiscovery.hasOwnProperty(property)) {
-                clearTimeout(property);
+                clearTimeout(this._timeoutArrayDiscovery[property]);
             }
         }
 

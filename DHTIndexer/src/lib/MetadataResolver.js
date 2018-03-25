@@ -40,28 +40,28 @@ class MetadataResolver extends EventEmitter {
     }
 
     // Only function to be called
-    getMetadata(infohash, peerDiscovery) {
+    register(infohash, peerDiscovery) {
         this.currentInfohash = infohash;
         this.peerDiscovery = peerDiscovery;
+        this.peerDiscovery.on('peer', this._onDHTPeer);
 
         this._setMetadataTimeout();
-
-        this.peerDiscovery.on('peer', this._onDHTPeer);
-        this.peerDiscovery.lookup(infohash);
     }
 
     _setMetadataTimeout() {
         this.remainingSec = setTimeout(function () {
-
-            this.peerDiscovery.removeListener('peer', this._onDHTPeer);
-
-            this.socketList.forEach(function (socket) {
-                socket.destroy();
-            })
-            this.socketList = []
-
+            this._unregister()
             this.emit('timeout', this.currentInfohash);
         }.bind(this), this.timeout)
+    }
+
+    _unregister() {
+        this.peerDiscovery.removeListener('peer', this._onDHTPeer);
+
+        this.socketList.forEach(function (socket) {
+            socket.destroy();
+        })
+        this.socketList = []
     }
 
     //seems ok. Too many sockets opened
@@ -90,12 +90,7 @@ class MetadataResolver extends EventEmitter {
 
                         clearTimeout(this.remainingSec);
 
-                        this.peerDiscovery.removeListener('peer', this._onDHTPeer);
-
-                        this.socketList.forEach(function (socket) {
-                            socket.destroy()
-                        })
-                        this.socketList = []
+                        this._unregister()
 
                         var torrent = this._parseMetadata(rawMetadata);
                         this.emit('metadata', torrent)
