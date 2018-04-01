@@ -9,7 +9,7 @@ This repo contains the following modules:
 
 ## BitTorrent DHT Indexer
 
-This module crawls the DHT Network for infohashes. Implement several functionalities from [BEB5](http://www.bittorrent.org/beps/bep_0005.html)
+This module crawls the DHT Network for infohashes. Implement several functionalities from [BEP5](http://www.bittorrent.org/beps/bep_0005.html)
 
 ### features
 * it uses the Sybil attack (horrizontal and/or vertical) on other nodes's routing tables. 
