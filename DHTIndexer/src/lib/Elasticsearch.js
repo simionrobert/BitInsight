@@ -4,6 +4,7 @@ const _ = require('lodash');
 var elasticsearch = require('elasticsearch');
 
 class ElasticSearch {
+    //TODO: Add timestamp auto (Done)
 
     constructor(opts) {
         if (!(this instanceof ElasticSearch))
@@ -33,7 +34,8 @@ class ElasticSearch {
                 Search: torrent.name.replace(/\./g, ' ').replace(/_/g, ' '),
                 Type: torrent.type,
                 Categories: torrent.categories,
-                Files: []
+                Files: [],
+                Date: Date.now()
         };
 
         for (let i = 0; i < torrent.files.length; i++) {
@@ -59,9 +61,11 @@ class ElasticSearch {
 
         var jsonObject = {
             doc: {
-                IPs: []
+                IPs: [],
+                Date: Date.now()
             }
         };
+
         for (let i = 0; i < torrent.listIP.length; i++) {
             jsonObject.doc.IPs.push(torrent.listIP[i].host);
         }
@@ -107,7 +111,6 @@ class ElasticSearch {
         }
 
         if (this.recordIPQueue.length / 2 >= this.batchSizeTorrent) {
-
             this.client.bulk({
                 body: this.recordIPQueue
             }, function (err, resp) {
@@ -190,7 +193,8 @@ class ElasticSearch {
                                     "Name": { "type": "text" },
                                     "Size": { "type": "long" }
                                 }
-                            }
+                            },
+                            "Date": {"type":"date"}
                         }
                     }
                 }
@@ -213,7 +217,8 @@ class ElasticSearch {
                     "doc": {
                         "properties": {
                             "ID": { "type": "long" },
-                            "IP": { "type": "ip" }
+                            "IP": { "type": "ip" },
+                            "Date": { "type": "date" }
                         }
                     }
                 }

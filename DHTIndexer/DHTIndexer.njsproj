@@ -75,6 +75,9 @@
     <Compile Include="src\test\testPeerDiscovery.js">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="src\test\testTorcache.js">
+      <SubType>Code</SubType>
+    </Compile>
     <Content Include="id.txt" />
     <Content Include="package.json" />
     <Content Include="README.md" />

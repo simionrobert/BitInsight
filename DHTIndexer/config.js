@@ -17,7 +17,7 @@
     },
 
     DEFAULT_METADATA_FETCHER_OPTIONS: {
-        timeout: 8*1000,
+        timeout: 9*1000,
         socketTimeout: 5000
     },
     
@@ -28,6 +28,10 @@
         },
         batchSizeDHT: 100,
         batchSizeTorrent:10
+    },
+
+    DEFAULT_BTCLIENT_OPTIONS: {
+        torcacheURL: "http://itorrents.org/torrent/"
     }
 };
 

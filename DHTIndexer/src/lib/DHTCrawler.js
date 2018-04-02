@@ -94,7 +94,6 @@ class DHTCrawler extends EventEmitter {
     }
 
     onMessage(data, rinfo) {
-        // TODO: Respond properly to querries IDs, data, etc.
         try {
             var msg = bencode.decode(data);
 
@@ -137,7 +136,6 @@ class DHTCrawler extends EventEmitter {
 
                 // passively observe get_peers querries
                 // infohash catched
-                // TODO: respond properly
                 
                 this._emitStandardForm(msg.a.info_hash, rinfo,0);
                 this.onGetPeersRequest(msg, rinfo);
@@ -145,7 +143,6 @@ class DHTCrawler extends EventEmitter {
             else if (msg.y == 'q' && msg.q == 'announce_peer') {
 
                 // infohash catched
-                // TODO: respond properly
                 this._emitStandardForm(msg.a.info_hash, rinfo,0);
                 this.onAnnouncePeerRequest(msg, rinfo);
             }

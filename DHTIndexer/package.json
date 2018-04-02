@@ -14,6 +14,7 @@
     "elasticsearch": "^14.2.0",
     "lodash": "^4.17.5",
     "magnet-uri": "^5.1.7",
+    "parse-torrent": "^5.8.3",
     "ut_metadata": "^3.2.0"
   }
 }

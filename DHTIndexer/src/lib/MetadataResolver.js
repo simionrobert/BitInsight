@@ -10,8 +10,6 @@ const net = require('net');
 const utils = require('./utils');
 
 
-// TODO: Metadata timeout & socket creation optimisation
-
 class MetadataResolver extends EventEmitter {
     constructor(opts) {
         super();
@@ -32,7 +30,6 @@ class MetadataResolver extends EventEmitter {
         this._onDHTPeer = function (peer, infohash, from) {
             if (this.currentInfohash == infohash.toString('hex')) {
 
-                // TODO: Implement Batch download
                 this.emit('download', peer, infohash);
             }
 
@@ -42,6 +39,7 @@ class MetadataResolver extends EventEmitter {
     // Only function to be called
     register(infohash, peerDiscovery) {
         this.currentInfohash = infohash;
+        this.semaphore = 1
         this.peerDiscovery = peerDiscovery;
         this.peerDiscovery.on('peer', this._onDHTPeer);
 
@@ -58,8 +56,13 @@ class MetadataResolver extends EventEmitter {
     _unregister() {
         this.peerDiscovery.removeListener('peer', this._onDHTPeer);
 
+        // use nextTick to emit the event once a handler is assigned
+
+
         this.socketList.forEach(function (socket) {
-            socket.destroy();
+            process.nextTick(function() {
+                socket.destroy();
+            });
         })
         this.socketList = []
     }
@@ -86,7 +89,10 @@ class MetadataResolver extends EventEmitter {
                 });
 
                 wire.ut_metadata.once('metadata', function (rawMetadata) {
-                    if (this.socketList.length != 0) {
+                    if (this.semaphore != 0) {
+                        process.nextTick(function () {
+                            this.semaphore = 0;
+                        }.bind(this));
 
                         clearTimeout(this.remainingSec);
 

@@ -12,7 +12,7 @@ var btClient = new BTClient(config,1,1);
 
 btClient.on('metadata', function (torrent) {
     var lastInfohashID = btClient.getID()
-    console.log('\n' + btClient.getID() +". Infohash: "+ torrent.infohash.toString('hex'));
+    console.log('\n' + lastInfohashID +". Infohash: "+ torrent.infohash.toString('hex'));
     console.log('Torrent sent to batch: ' + torrent.name);
 
     indexer.indexTorrent(torrent)
@@ -20,7 +20,7 @@ btClient.on('metadata', function (torrent) {
 
 btClient.on('ip', function (torrent) {
     var lastInfohashID = btClient.getID()
-    console.log('\n' + btClient.getID() + ". Infohash: " + torrent.infohash.toString('hex'));
+    console.log('\n' + lastInfohashID + ". Infohash: " + torrent.infohash.toString('hex'));
     console.log('List ip sent to batch ' + torrent.listIP.length);
 
 

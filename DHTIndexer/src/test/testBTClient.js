@@ -27,14 +27,9 @@ btClient.on('ip', function (torrent) {
 });
 
 
-btClient.addToCache('0d5b1c570e7c03bc456f53d0e9628b12a64f638f')
-btClient.addToCache('726b4809351adf6fedc6ad779762829bf5512ae1')
-btClient.addToCache('0d5b1c570e7c03bc456f53d0e9628b12a64f638f')
-btClient.addToCache('a236f822243ac8356084b0d9f7a0c2a11c06b789')
-btClient.addToCache('726b4809351adf6fedc6ad779762829bf5512ae1')
+btClient.addToCache('ee2b1e1b2b675ac86e9a17b82e29d29ee9124a59')
+btClient.addToCache('1f883132cd8beaed336d3f6744b6c0d6cd9b9ecb')
 btClient.addToCache('0d5b1c570e7c03bc456f53d0e9628b12a64f638f')
 btClient.addToCache('a236f822243ac8356084b0d9f7a0c2a11c06b789')
-btClient.addToCache('726b4809351adf6fedc6ad779762829bf5512ae1')
-btClient.addToCache('0d5b1c570e7c03bc456f53d0e9628b12a64f638f')
 
 btClient.startService();
