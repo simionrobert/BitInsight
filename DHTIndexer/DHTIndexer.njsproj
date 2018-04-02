@@ -52,6 +52,9 @@
     <Compile Include="src\slave.js">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="src\test\test.js">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="src\test\testBTClient.js">
       <SubType>Code</SubType>
     </Compile>

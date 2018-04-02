@@ -27,10 +27,10 @@ class BTClient extends EventEmitter{
         this.semaphore = false
         this.lastInfohashID = parseInt(fs.readFileSync('id.txt'), 10);
 
-        this._onPeer = function (peer, infohash, from) {
+        this.onPeer = function (peer, infohash, from) {
             this.listIP.push(peer);
         }
-        this._onDiscoveryEnded = function (infohash) {
+        this.onDiscoveryEnded = function (infohash) {
             var torrent = {
                 infohash: infohash,
                 listIP: _.uniq(this.listIP)
@@ -42,7 +42,7 @@ class BTClient extends EventEmitter{
                 this.startService()
         }
 
-        this._onMetadata = function (torrent, remoteAddress) {
+        this.onMetadata = function (torrent, remoteAddress) {
             torrent = this.categoriser.parse(torrent)
 
             this.nextInfohash();
@@ -51,11 +51,8 @@ class BTClient extends EventEmitter{
                 this.startService()
         }
 
-        this._onMetadataTimeout = function (infohash) {
+        this.onMetadataTimeout = function (infohash) {
             //failed with metadata dht fetcher
-
-            //TODO: Separate parse torrent from btclient
-            //TODO: Add webtorrent tracker to download ips from trackers
 
             //try through torcache
             parseTorrent.remote(this.torcacheURL + infohash + ".torrent", function (err, parsedTorrent) {
@@ -77,10 +74,64 @@ class BTClient extends EventEmitter{
         }
 
         if (metadataFlag) {
-            this._metadataFetcher = new MetadataResolver(opts.DEFAULT_METADATA_FETCHER_OPTIONS);
-            this._metadataFetcher.on('metadata', this._onMetadata.bind(this));
-            this._metadataFetcher.on('timeout', this._onMetadataTimeout.bind(this));
+            this.metadataFetcher = new MetadataResolver(opts.DEFAULT_METADATA_FETCHER_OPTIONS);
+            this.metadataFetcher.on('metadata', this.onMetadata.bind(this));
+            this.metadataFetcher.on('timeout', this.onMetadataTimeout.bind(this));
         }
+    }
+
+    addToCache(infohash) {
+        if (Array.isArray(infohash))
+            this.cache = this.cache.concat(infohash)
+        else
+            this.cache.push(infohash)
+    }
+
+    startService() {
+        if (this.cache.length != 0) {
+            this.lastInfohashID++;
+            this.listIP = [];
+            this.semaphore = false
+            var infohash = this.cache.shift();
+
+            //create new PeerDiscovery for each infohash
+            this.peerDiscovery = new PeerDiscovery(this.opts.DEFAULT_PEER_DISCOVERY_OPTIONS);
+            if (this.ipFlag) {
+                this.peerDiscovery.on('peer', this.onPeer.bind(this));
+                this.peerDiscovery.on('done', this.onDiscoveryEnded.bind(this));
+            }
+
+            //register peerdiscovery to metadataFetcher
+            if (this.metadataFlag)
+                this.metadataFetcher.register(infohash, this.peerDiscovery)
+
+            //start getting metadata
+            this.peerDiscovery.lookup(infohash);
+        } else {
+            this.listIP = [];
+
+            //periodically save to keep log of where i remained and to continue from
+            fs.writeFile('id.txt', this.lastInfohashID);
+
+            this.emit("cacheEmpty");
+        }
+    }
+
+    nextInfohash() {
+        this.semaphore = !(this.semaphore || !(this.metadataFlag & this.ipFlag))
+
+        if (this.semaphore == false) {
+            if (this.ipFlag) {
+                this.peerDiscovery.removeListener('peer', this.onPeer);
+                this.peerDiscovery.removeListener('done', this.onDiscoveryEnded);
+            }
+
+            this.peerDiscovery.destroy();
+        }
+    }
+
+    getID() {
+        return this.lastInfohashID
     }
 
     _parseMetadata(parsedTorrent) {
@@ -104,62 +155,6 @@ class BTClient extends EventEmitter{
             name: parsedTorrent.name,
             files: files
         }
-    }
-
-    addToCache(infohash) {
-        if (Array.isArray(infohash))
-            this.cache = this.cache.concat(infohash)
-        else
-            this.cache.push(infohash)
-    }
-
-    startService() {
-        if (this.cache.length != 0) {
-            this.lastInfohashID++;
-            this.listIP = [];
-            this.semaphore = false
-            var infohash = this.cache.shift();
-
-            //create new PeerDiscovery for each infohash
-            this._peerDiscovery = new PeerDiscovery(this.opts.DEFAULT_PEER_DISCOVERY_OPTIONS);
-
-            if (this.ipFlag) {
-                this._peerDiscovery.on('peer', this._onPeer.bind(this));
-                this._peerDiscovery.on('done', this._onDiscoveryEnded.bind(this));
-            }
-
-            //register peerdiscovery to metadataFetcher
-            if (this.metadataFlag)
-                this._metadataFetcher.register(infohash, this._peerDiscovery)
-
-            //start getting metadata
-            this._peerDiscovery.lookup(infohash);
-        } else {
-            this.listIP = [];
-
-            //periodically save to keep log of where i remained and to continue from
-            fs.writeFile('id.txt', this.lastInfohashID);
-
-            this.emit("cacheEmpty");
-        }
-    }
-
-    nextInfohash() {
-        this.semaphore = !(this.semaphore || !(this.metadataFlag & this.ipFlag))
-
-        if (this.semaphore == false) {
-            if (this.ipFlag) {
-                this._peerDiscovery.removeListener('peer', this._onPeer);
-                this._peerDiscovery.removeListener('done', this._onDiscoveryEnded);
-
-            }
-
-            this._peerDiscovery.destroy();
-        }
-    }
-
-    getID() {
-        return this.lastInfohashID
     }
 }
 

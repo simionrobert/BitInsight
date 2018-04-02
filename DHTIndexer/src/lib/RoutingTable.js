@@ -9,10 +9,9 @@ class RoutingTable {
     }
 
     push(node) {
-        if (this.nodes.length >= this.maxsize) {
-            return;
+        if (this.nodes.length < this.maxsize) {
+            this.nodes.push(node);
         }
-        this.nodes.push(node);
     }
 }
 

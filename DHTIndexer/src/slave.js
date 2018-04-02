@@ -1,5 +1,7 @@
 ﻿'use strict'
 
+process.env.UV_THREADPOOL_SIZE = 64
+
 const config = require('../config');
 const ElasticSearch = require('./lib/Elasticsearch');
 const BTClient = require('./lib/BTClient');
@@ -11,31 +13,32 @@ var btClient = new BTClient(config,1,1);
 
 
 btClient.on('metadata', function (torrent) {
-    var lastInfohashID = btClient.getID()
-    console.log('\n' + lastInfohashID +". Infohash: "+ torrent.infohash.toString('hex'));
+
+    console.log('\n' + btClient.getID() + ". Infohash: " + torrent.infohash.toString('hex'));
     console.log('Torrent sent to batch: ' + torrent.name);
 
-    indexer.indexTorrent(torrent)
+    setImmediate((torrent) => {
+        indexer.indexTorrent(torrent)
+    }, torrent);
 });
 
 btClient.on('ip', function (torrent) {
-    var lastInfohashID = btClient.getID()
-    console.log('\n' + lastInfohashID + ". Infohash: " + torrent.infohash.toString('hex'));
+
+    console.log('\n' + btClient.getID() + ". Infohash: " + torrent.infohash.toString('hex'));
     console.log('List ip sent to batch ' + torrent.listIP.length);
 
-
-    indexer.indexIP(torrent)
+    setImmediate((torrent) => {
+        indexer.indexIP(torrent)
+    }, torrent);
 });
 
 
 btClient.on('cacheEmpty', function () {
-
     var lastInfohashID = btClient.getID()
 
-    indexer.getLastInfohashes(lastInfohashID+1, lastInfohashID + batchSize, function infohashRetrieved(listInfohashes) {
-        btClient.addToCache(listInfohashes);
+    indexer.getLastInfohashes(lastInfohashID + 1, lastInfohashID + batchSize, function (listInfohashes) {
 
-        // Reload service
+        btClient.addToCache(listInfohashes);
         if (listInfohashes.length != 0) {
             btClient.startService()
         }

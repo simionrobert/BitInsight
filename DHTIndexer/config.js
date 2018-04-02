@@ -39,14 +39,18 @@ module.exports = config;
 
 
 /*
-Updates:
-- Implement Batch Metadata download
+
+TODO: Separate parse torrent from btclient
+TODO: Add webtorrent tracker to download ips from trackers
 
 Done:
+- Implement Batch Metadata download
 - DHTCrawl & PD+MF different processes save & updates different indexes
 - means of saving state: count (id in IP index)
 - To be perfect: Make peer Discovery independent of infohash (multiple infohashes same time). Discuss with creator+propose
 - IP index, PD updates docs by id
 - DHT Crawl cache & bulk + transmit partial cache after a timeout
 - Veriy Peer Discover conccurent
+- ES: Add timestamp auto (Done)
+
 */

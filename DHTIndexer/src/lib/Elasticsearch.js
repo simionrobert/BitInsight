@@ -4,7 +4,6 @@ const _ = require('lodash');
 var elasticsearch = require('elasticsearch');
 
 class ElasticSearch {
-    //TODO: Add timestamp auto (Done)
 
     constructor(opts) {
         if (!(this instanceof ElasticSearch))
@@ -17,7 +16,8 @@ class ElasticSearch {
         this.recordTorrentQueue = [];
         this.recordIPQueue = [];
 
-        this.getLastID()
+        // for dht indexing
+        this._getLastID() //is async but it is executed first
     }
 
     indexTorrent(torrent) {
@@ -128,18 +128,6 @@ class ElasticSearch {
         }
     }
 
-
-    decodeGetLastInfohashes(response) {
-        var listObjects = response.hits.hits;
-        var listInfohashes = []
-
-        for (let i = 0; i < listObjects.length; i++) {
-            listInfohashes.push(listObjects[i]._id)
-        }
-
-        return listInfohashes;
-    }
-
     getLastInfohashes(min,max,callback) {
         this.client.search({
             index: "ip",
@@ -159,21 +147,41 @@ class ElasticSearch {
             if (error) {
                 console.log("error GetLastInfohashes");
             } else {
-                callback(this.decodeGetLastInfohashes(response));
+                callback(this._decodeGetLastInfohashes(response));
             }
         }.bind(this));
     }
 
-    getLastID() {
-        this.client.count({
-            index: 'ip'
+    _decodeGetLastInfohashes(response) {
+        var listObjects = response.hits.hits;
+        var listInfohashes = []
+
+        for (let i = 0; i < listObjects.length; i++) {
+            listInfohashes.push(listObjects[i]._id)
+        }
+
+        return listInfohashes;
+    }
+
+    _getLastID() {
+        this.client.search({
+            index: 'ip',
+            body: {
+                "aggs": {
+                    "max_id": {
+                        "max": {
+                            "field": "ID"
+                        }
+                    }
+                }
+            }
         }, function (error, response) {
-                if (error != undefined) {
-                    console.log("unexpected error from elasticsearch");
-                    process.exit(0);
+            if (error != undefined) {
+                console.log("unexpected error from elasticsearch");
+                process.exit(0);
                 }
 
-            this._id = response.count+1;
+            this._id = response.aggregations.max_id.value + 1;
         }.bind(this));
     }
 
