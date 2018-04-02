@@ -43,6 +43,9 @@
     <Compile Include="src\index.js">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="src\lib\PeerDiscoveryM.js">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="src\master.js">
       <SubType>Code</SubType>
     </Compile>

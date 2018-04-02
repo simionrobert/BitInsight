@@ -1,7 +1,7 @@
 ﻿var crypto = require('crypto');
 
 exports.generateRandomID = function () {
-    return crypto.createHash('sha1').update(crypto.randomBytes(20)).digest();
+    return crypto.randomBytes(20)
 };
 
 exports.generateNeighborID = function (target, nid) {
