@@ -14,16 +14,18 @@ class PeerDiscovery extends EventEmitter {
         this.timeout = opts.timeout || 3000;
         this.secRemaining = 0;
         this.currentInfohash = 0;
+        this.semaphore = 0;
 
         this.dht = new DHT(opts)
 
         this._onDHTPeer = function (peer, infohash, from) {
             if (this.currentInfohash.equals(infohash)) {
+
                 clearTimeout(this.secRemaining);
 
                 this.emit('peer', peer, infohash, from);
 
-                this._setInfohashTimeout(infohash,this.timeout)
+                this._setInfohashTimeout(infohash, this.timeout)
             }
         }
 
@@ -33,7 +35,6 @@ class PeerDiscovery extends EventEmitter {
 
     lookup(infohash) {
         this.currentInfohash = Buffer.from(infohash, 'hex');
-        this.secRemaining = 0;
         this._setInfohashTimeout(infohash,this.timeout)
 
         this.dht.lookup(infohash);
@@ -41,14 +42,23 @@ class PeerDiscovery extends EventEmitter {
 
     _setInfohashTimeout(infohash, timeout) {
         this.secRemaining = setTimeout(function () {
-            this.emit('done', infohash);
+            if (this.semaphore == 0) {
+                this.semaphore = 1;
+
+                this.dht.removeListener('peer', this._onDHTPeer)
+
+                this.emit('timeout', infohash);
+            }
         }.bind(this), timeout)
     }
 
     destroy(cb) {
         clearTimeout(this.secRemaining);
 
-        this.dht.removeListener('peer', this._onDHTPeer)
+        if (this.semaphore == 0) {
+            this.dht.removeListener('peer', this._onDHTPeer)
+        }
+
         this.dht.destroy(cb)
     }
 }

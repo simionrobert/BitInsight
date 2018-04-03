@@ -7,35 +7,57 @@ var config = require('../../config');
 
 var peerDiscovery = new PeerDiscovery(config.DEFAULT_PEER_DISCOVERY_OPTIONS);
 var count = 1;
-peerDiscovery.on('peer', function (peer, infohash, from) {
+
+function onPeer(peer, infohash, from) {
     console.log('Infohash: ' + infohash.toString("hex") + ' found potential peer ' + peer.host + ':' + peer.port + ' through ' + from.address + ':' + from.port);
-});
-peerDiscovery.on('discoveryEnded', function (infohash) {
+}
+
+function onTimeout(infohash) {
     console.log('Discovery ended for ', infohash.toString('hex'));
-    //if ( count == 1) { 
-    //    count++
-    //    peerDiscovery.lookup(INFO_HASH2);
-    //}
-    //else
-    //    if (count== 2) {
-    //        count++
-    //        peerDiscovery.lookup(INFO_HASH1);
-    //    }
-           
-    //else
-    //        if (count == 3) {
-    //            count++
-    //            peerDiscovery.lookup(INFO_HASH2);
-    //        }
-    //else
-    //            if (count == 4) {
-    //                count++
-    //                peerDiscovery.lookup(INFO_HASH1);
-    //            }
-});
+    if (count == 1) {
+        count++
 
+        this.destroy();
+        var peerDiscovery = new PeerDiscovery(config.DEFAULT_PEER_DISCOVERY_OPTIONS);
+        peerDiscovery.addListener('peer', onPeer);
+        peerDiscovery.addListener('timeout', onTimeout);
+        peerDiscovery.lookup(INFO_HASH2);
+    }
+    else
+        if (count == 2) {
+            count++
 
+            this.destroy();
+            var peerDiscovery = new PeerDiscovery(config.DEFAULT_PEER_DISCOVERY_OPTIONS);
+            peerDiscovery.addListener('peer', onPeer);
+            peerDiscovery.addListener('timeout', onTimeout);
+            peerDiscovery.lookup(INFO_HASH1);
+        }
+
+        else
+            if (count == 3) {
+                count++
+
+                this.destroy();
+                var peerDiscovery = new PeerDiscovery(config.DEFAULT_PEER_DISCOVERY_OPTIONS);
+                peerDiscovery.addListener('peer', onPeer);
+                peerDiscovery.addListener('timeout', onTimeout);
+                peerDiscovery.lookup(INFO_HASH2);
+            }
+            else
+                if (count == 4) {
+                    count++
+
+                    this.destroy();
+                    var peerDiscovery = new PeerDiscovery(config.DEFAULT_PEER_DISCOVERY_OPTIONS);
+                    peerDiscovery.addListener('peer', onPeer);
+                    peerDiscovery.addListener('timeout', onTimeout);
+                    peerDiscovery.lookup(INFO_HASH32);
+                }
+}
+
+peerDiscovery.addListener('peer', onPeer);
+peerDiscovery.addListener('timeout', onTimeout);
 peerDiscovery.lookup(INFO_HASH1);
-peerDiscovery.lookup(INFO_HASH2);
-peerDiscovery.lookup(INFO_HASH32);
+
 

@@ -36,19 +36,17 @@ class BTClient extends EventEmitter{
                 listIP: _.uniq(this.listIP)
             }
 
-            this.nextInfohash();
             this.emit('ip', torrent);
-            if (this.semaphore == false)
-                this.startService()
+
+            this._nextInfohash();
         }
 
         this.onMetadata = function (torrent, remoteAddress) {
             torrent = this.categoriser.parse(torrent)
 
-            this.nextInfohash();
             this.emit('metadata', torrent);
-            if (this.semaphore == false)
-                this.startService()
+
+            this._nextInfohash();
         }
 
         this.onMetadataTimeout = function (infohash) {
@@ -56,20 +54,18 @@ class BTClient extends EventEmitter{
 
             //try through torcache
             parseTorrent.remote(this.torcacheURL + infohash + ".torrent", function (err, parsedTorrent) {
+
                 if (err || typeof parsedTorrent === "undefined") {
-                    this.nextInfohash();
-                    if (this.semaphore == false)
-                        this.startService()
+                    this._nextInfohash();
                     return;
                 }
 
                 var torrent = this._parseMetadata(parsedTorrent)
                 torrent = this.categoriser.parse(torrent)
 
-                this.nextInfohash();
                 this.emit('metadata', torrent);
-                if (this.semaphore == false)
-                    this.startService()
+
+                this._nextInfohash();
             }.bind(this))
         }
 
@@ -98,7 +94,7 @@ class BTClient extends EventEmitter{
             this.peerDiscovery = new PeerDiscovery(this.opts.DEFAULT_PEER_DISCOVERY_OPTIONS);
             if (this.ipFlag) {
                 this.peerDiscovery.on('peer', this.onPeer.bind(this));
-                this.peerDiscovery.on('done', this.onDiscoveryEnded.bind(this));
+                this.peerDiscovery.on('timeout', this.onDiscoveryEnded.bind(this));
             }
 
             //register peerdiscovery to metadataFetcher
@@ -117,22 +113,28 @@ class BTClient extends EventEmitter{
         }
     }
 
-    nextInfohash() {
+    getID() {
+        return this.lastInfohashID
+    }
+
+    _nextInfohash() {
         this.semaphore = !(this.semaphore || !(this.metadataFlag & this.ipFlag))
 
         if (this.semaphore == false) {
             if (this.ipFlag) {
                 this.peerDiscovery.removeListener('peer', this.onPeer);
-                this.peerDiscovery.removeListener('done', this.onDiscoveryEnded);
+                this.peerDiscovery.removeListener('timeout', this.onDiscoveryEnded);
             }
 
             this.peerDiscovery.destroy();
+
+            setImmediate(function() {
+                this.startService();
+            }.bind(this));
         }
     }
 
-    getID() {
-        return this.lastInfohashID
-    }
+
 
     _parseMetadata(parsedTorrent) {
         var files = [];

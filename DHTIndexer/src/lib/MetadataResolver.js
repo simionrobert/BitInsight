@@ -16,100 +16,89 @@ class MetadataResolver extends EventEmitter {
         if (!(this instanceof MetadataResolver))
             return new MetadataResolver(opts);
 
-        this.selfID = utils.generateRandomID();
-
-        this.socketList = [];
-        this.currentInfohash = null;
-
         this.timeout = opts.timeout;
         this.socketTimeout = opts.socketTimeout;
+
+        this.selfID = utils.generateRandomIDSync();
+        this.socketList = [];
+        this.currentInfohash = null;
         this.remainingSec = 0;
 
-        this.on('download', this._downloadMetadata)
-
         this._onDHTPeer = function (peer, infohash, from) {
-            if (this.currentInfohash == infohash.toString('hex')) {
-
-                this.emit('download', peer, infohash);
+            if (this.currentInfohash == infohash.toString('hex') && this.semaphore != 0) {
+                this._downloadMetadata(peer, infohash)
             }
-
-        }.bind(this);
+        }
     }
 
-    // Only function to be called
     register(infohash, peerDiscovery) {
         this.currentInfohash = infohash;
         this.semaphore = 1
         this.peerDiscovery = peerDiscovery;
-        this.peerDiscovery.on('peer', this._onDHTPeer);
 
-        this._setMetadataTimeout();
-    }
-
-    _setMetadataTimeout() {
-        this.remainingSec = setTimeout(function () {
-            this._unregister()
-            this.emit('timeout', this.currentInfohash);
-        }.bind(this), this.timeout)
+        this.peerDiscovery.on('peer', this._onDHTPeer.bind(this));
+        this._setMetadataTimeout(this.timeout);
     }
 
     _unregister() {
+        this.semaphore = 0;
         this.peerDiscovery.removeListener('peer', this._onDHTPeer);
 
-        // use nextTick to emit the event once a handler is assigned
-
-
         this.socketList.forEach(function (socket) {
-            process.nextTick(function() {
-                socket.destroy();
-            });
+            socket.destroy();
         })
         this.socketList = []
     }
 
-    //seems ok. Too many sockets opened
+    _setMetadataTimeout(timeout) {
+        this.remainingSec = setTimeout(function () {
+            this._unregister()
+
+            this.emit('timeout', this.currentInfohash);
+        }.bind(this), timeout)
+    }
+
+
     _downloadMetadata(peer, infohash) {
-        if (this.currentInfohash == infohash.toString('hex')) {
+        var socket = new net.Socket();
 
-            const socket = new net.Socket();
-            this.socketList.push(socket);
+        socket.on('error', err => { socket.destroy(); });
+        socket.on('timeout', err => { socket.destroy(); });
 
-            socket.setTimeout(this.socketTimeout);
+        socket.setTimeout(this.socketTimeout);
+        this.socketList.push(socket);
 
-            this._onPeerConnected = function () {
+        this._onPeerConnected = function () {
+            if (this.semaphore != 0) {
                 const wire = new Protocol();
 
                 socket.pipe(wire).pipe(socket);
                 wire.use(ut_metadata());
 
-                wire.handshake(infohash, this.selfID, { dht: true });
-
                 wire.on('handshake', function (infohash, peerId) {
-                    wire.ut_metadata.fetch();
+                    if (this.semaphore != 0)
+                        wire.ut_metadata.fetch();
                 });
 
-                wire.ut_metadata.once('metadata', function (rawMetadata) {
+                wire.ut_metadata.on('metadata', function (rawMetadata) {
                     if (this.semaphore != 0) {
-                        process.nextTick(function () {
-                            this.semaphore = 0;
-                        }.bind(this));
+                        this._unregister();
 
                         clearTimeout(this.remainingSec);
-
-                        this._unregister()
 
                         var torrent = this._parseMetadata(rawMetadata);
                         this.emit('metadata', torrent)
                     }
                 }.bind(this));
-            }.bind(this);
 
-            socket.on('error', err => { socket.destroy(); });
-            socket.on('timeout', err => { socket.destroy(); });
 
-            socket.connect(peer.port, peer.host, this._onPeerConnected);
-        }
+                wire.handshake(infohash, this.selfID, { dht: true });
+            }
+        }.bind(this);
+
+        socket.connect(peer.port, peer.host, this._onPeerConnected);
     }
+
 
     _parseMetadata(rawMetadata) {
         var metadata = bencode.decode(rawMetadata).info;

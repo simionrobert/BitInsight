@@ -85,10 +85,14 @@ class DHTCrawler extends EventEmitter {
     verticalAttack() {
         this.routingTable.nodes.forEach(function (node) {
             for (var i = 0; i < this.verticalAttackNrNodes; i++) {
-                this.sendFindNodeRequest({
-                    address: node.address,
-                    port: node.port
-                }, utils.generateNeighborID(node.nid, utils.generateRandomID()));
+                utils.generateRandomIDAsync(node, null,function (node, x, randomID) {
+
+                    this.sendFindNodeRequest({
+                        address: node.address,
+                        port: node.port
+                    }, utils.generateNeighborID(node.nid, randomID));
+
+                }.bind(this));
             }
         }.bind(this));
     }
@@ -161,17 +165,20 @@ class DHTCrawler extends EventEmitter {
 
         // generateNeighborID(nid, this.routingTable.nid) to make other store my id in their routing table (close to him)
         // this.routingTable.nid to have same id, if i send to him my id. Random or this?
-        var targetID = utils.generateRandomID();
-        var msg = {
-            t: targetID.slice(0, 4),
-            y: 'q',
-            q: 'find_node',
-            a: {
-                id: nodeID,
-                target: targetID
-            }
-        };
-        this.sendKRPC(msg, rinfo);
+
+        utils.generateRandomIDAsync(rinfo, nodeID,function (rinfo, nodeID, targetID) {
+            var msg = {
+                t: targetID.slice(0, 4),
+                y: 'q',
+                q: 'find_node',
+                a: {
+                    id: nodeID,
+                    target: targetID
+                }
+            };
+            this.sendKRPC(msg, rinfo);
+
+        }.bind(this));
     }
 
     onFindNodeResponse(data) {
@@ -185,19 +192,20 @@ class DHTCrawler extends EventEmitter {
     }
 
     sendSampleInfohashesRequest(rinfo, nid) {
-        var targetID = utils.generateRandomID();
+        utils.generateRandomIDAsync(rinfo, nid,function (rinfo, nid, targetID) {
+            var msg = {
+                t: targetID.slice(0, 4),
+                y: 'q',
+                q: 'sample_infohashes',
+                a: {
+                    id: this.routingTable.nid,
+                    target: targetID
+                }
+            };
 
-        var msg = {
-            t: targetID.slice(0, 4),
-            y: 'q',
-            q: 'sample_infohashes',
-            a: {
-                id: this.routingTable.nid,
-                target: targetID
-            }
-        };
+            this.sendKRPC(msg, rinfo);
 
-        this.sendKRPC(msg, rinfo);
+        }.bind(this));
     }
 
     onPingRequest(msg, rinfo) {

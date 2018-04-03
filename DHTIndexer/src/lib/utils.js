@@ -1,6 +1,14 @@
 ﻿var crypto = require('crypto');
 
-exports.generateRandomID = function () {
+exports.generateRandomIDAsync = function (rinfo, nodeID, cb) {
+
+    crypto.randomBytes(20, (err, buf) => {
+        if(err) throw err
+        cb(rinfo, nodeID, buf)
+    })
+};
+
+exports.generateRandomIDSync = function () {
     return crypto.randomBytes(20)
 };
 
