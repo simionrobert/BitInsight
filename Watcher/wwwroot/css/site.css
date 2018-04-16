@@ -1,0 +1,37 @@
+﻿body {
+    padding-top: 50px;
+    padding-bottom: 20px;
+}
+
+/* Wrapping element */
+/* Set some basic padding to keep content from hitting the edges */
+.body-content {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+.search-bar {
+    margin:auto;
+    width:50%;
+}
+
+.image {
+    margin-top: 50px;
+    margin-bottom: 35px;
+}
+
+.marginbtm {
+    margin-bottom: 200px;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.subtitle {
+    color: gray;
+}
+
+/* Hide/rearrange for smaller screens */
+@media screen and (max-width: 767px) {
+}

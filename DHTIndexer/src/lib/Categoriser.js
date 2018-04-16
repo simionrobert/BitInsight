@@ -43,26 +43,26 @@ class Categorizer {
 
         if (this.videoFormats.indexOf(ext) > -1) {
             if (torrent.type === '')
-                torrent.type = 'video';
+                torrent.type = 'Video';
 
             newTorrent = this.getVideoCategories(file, newTorrent);
         } else if (this.audioFormats.indexOf(ext) > -1) {
             if (torrent.type === '')
-                torrent.type = 'audio';
+                torrent.type = 'Audio';
 
         } else if (this.documentFormats.indexOf(ext) > -1) {
             if (torrent.type === '')
-                torrent.type = 'doc';
+                torrent.type = 'Doc';
 
             newTorrent = this.getDocCategories(file, newTorrent);
         } else if (this.mediaFormat.indexOf(ext) > -1) {
             if (torrent.type === '')
-                torrent.type = 'media';
+                torrent.type = 'Media';
 
             newTorrent = this.getMediaCategories(file, newTorrent);
         } else if (this.photoFormat.indexOf(ext) > -1) {
             if (torrent.type === '')
-                torrent.type = 'picture';
+                torrent.type = 'Picture';
         } else {
 
             //default categorise by name if the extension is not recognised
@@ -82,10 +82,10 @@ class Categorizer {
         } else if (file.name.match(/[0-9]+x[0-9]+/i)) {
             torrent.categories.push('TVshow');
 
-        } else if (torrent.type == 'video') {
+        } else if (torrent.type == 'Video') {
 
             //default for video
-			torrent.categories.push('movie');
+			torrent.categories.push('Movie');
 		}
 
         if (file.name.toLowerCase().indexOf('1080') > -1) {
@@ -123,35 +123,35 @@ class Categorizer {
 
 	getDocCategories (file, torrent) {
         if (file.name.indexOf('.epub') != -1) {
-			torrent.categories.push('ebook');
+			torrent.categories.push('Ebook');
 		}
         if (file.name.indexOf('.mobi') != -1) {
-			torrent.categories.push('ebook');
+            torrent.categories.push('Ebook');
 		}
         if (file.name.indexOf('.azw3') != -1) {
-			torrent.categories.push('ebook');
+            torrent.categories.push('Ebook');
 		}
 	}
 
     getMediaCategories(file, torrent) {
         if (file.name.toLowerCase().indexOf('codex') > -1) {
-            torrent.categories.push('game');
+            torrent.categories.push('Game');
         } else if (file.name.toLowerCase().indexOf('skidrow') > -1) {
-            torrent.categories.push('game');
+            torrent.categories.push('Game');
         } else if (file.name.toLowerCase().indexOf('reloaded') > -1) {
-            torrent.categories.push('game');
+            torrent.categories.push('Game');
         } else if (file.name.toLowerCase().indexOf('plaza') > -1) {
-            torrent.categories.push('game');
+            torrent.categories.push('Game');
         } else if (file.name.toLowerCase().indexOf('gog') > -1) {
-            torrent.categories.push('game');
+            torrent.categories.push('Game');
         } else if (file.name.toLowerCase().indexOf('razor1911') > -1) {
-            torrent.categories.push('game');
+            torrent.categories.push('Game');
         } else if (file.name.toLowerCase().indexOf('hi2u') > -1) {
-            torrent.categories.push('game');
+            torrent.categories.push('Game');
         } else if (file.name.toLowerCase().indexOf('tinyiso') > -1) {
-            torrent.categories.push('game');
+            torrent.categories.push('Game');
         } else if (file.name.toLowerCase().indexOf('postmortem') > -1) {
-            torrent.categories.push('game');
+            torrent.categories.push('Game');
         }
     }
 }

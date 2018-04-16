@@ -34,8 +34,8 @@ class ElasticSearch {
                 Search: torrent.name.replace(/\./g, ' ').replace(/_/g, ' '),
                 Type: torrent.type,
                 Categories: torrent.categories,
-                Files: [],
-                Date: Date.now()
+            Files: [],
+            Date: Date.now()
         };
 
         for (let i = 0; i < torrent.files.length; i++) {
@@ -202,7 +202,8 @@ class ElasticSearch {
                                     "Size": { "type": "long" }
                                 }
                             },
-                            "Date": {"type":"date"}
+                            "Date": {
+                                "type": "date"}
                         }
                     }
                 }
@@ -226,7 +227,7 @@ class ElasticSearch {
                         "properties": {
                             "ID": { "type": "long" },
                             "IP": { "type": "ip" },
-                            "Date": { "type": "date" }
+                            "Date": { "type": "date"}
                         }
                     }
                 }

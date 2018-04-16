@@ -1,0 +1,17 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center image">
+    <img src="~/images/logo_transparent.png" class="rounded" alt="Watcher">
+</div>
+
+
+<form class ="marginbtm" asp-controller="Search" asp-action="Index">
+    <div class="row form-group justify-content-md-center align-items-center">
+            <input type="text" class="form-control search-bar" placeholder="Pirate Search" name="input">
+    </div>
+        <div class="row form-group">
+            <button type="submit" class="btn btn-primary center-block">Pirate Search</button>
+        </div>
+</form>
