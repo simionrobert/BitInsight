@@ -53,19 +53,27 @@ namespace Watcher.Controllers
             return View("~/Views/Search/Index.cshtml", model);
         }
 
+        public IActionResult Browse(String type)
+        {
+            IEnumerable<Torrent> torrents = _torrentService.GetTorrentsByCategory(type);
+
+
+            TorrentIndexModel model = ModeliseSearch(torrents);
+
+            return View("~/Views/Search/Index.cshtml", model);
+        }
+
         private TorrentIndexModel ModeliseSearch(IEnumerable<Torrent> torrents)
         {
             var listingResult = torrents.Select(result => new TorrentIndexListingModel
             {
                 ID = result.ID,
                 Name = result.Name,
-                Date = new DateTime(1970, 1, 1).AddMilliseconds(Double.Parse(result.Date)),
-                Categories = result.FormattedCategories,
+                Date = FormatterUtil.FormatDate(result.Date),
+                Categories = FormatterUtil.FormatCategories(result.Categories),
                 Type = result.Type,
                 MagnetLink = result.MagnetLink,
-                Size = (result.Files.Sum(x => x.Size)) < 1000000000
-                ? (result.Files.Sum(x => x.Size) / 1000000.00).ToString("f2") + " MB" 
-                : (result.Files.Sum(x => x.Size) / 1000000000.00).ToString("f2") + " GB",
+                Size = FormatterUtil.FormatBytes(result.Files.Sum(x => x.Size)),
                 PeerNumber = _torrentService.getTorrentIPsById(result.ID).Count()
             });
 

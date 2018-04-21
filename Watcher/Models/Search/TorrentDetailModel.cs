@@ -15,8 +15,9 @@ namespace Watcher.Models.Search
         public String Categories;
         public String MagnetLink;
         public String Size;
+        public int NrFiles;
         public int PeerNumber;
         public IEnumerable<IPIndexListingModel> IPs { get; set; }
-        public IEnumerable<File> Files { get; set; }
+        public IEnumerable<FileDetailModel> Files { get; set; }
     }
 }

@@ -1,10 +1,89 @@
 ﻿@model Watcher.Models.Search.TorrentDetailModel
 
 @{
-    ViewData["Title"] = "Detail";
+    ViewData["Title"] = "Torrent Detail";
+    Layout = "_LayoutSearch";
 }
 
-<h2>Detail</h2>
+@section Scripts {
+    <script type="text/javascript" src="/js/detail.js"></script>
+}
 
-<h3>@Model.Name</h3>
+<div id="assets">
+    <h3 align="center">@Model.Name</h3>
+    <div id="assetsTable">
+        <table class="table table-condensed table-responsive">
+            <tr>
+                <th>Torrent:</th>
+                <td>
+                    <a href="@Model.MagnetLink" class="noborder">
+                        @Model.Name
+                    </a>
+                    <a href="@Model.MagnetLink" class="noborder">
+                        <i class="glyphicon glyphicon-magnet"></i>
+                    </a>
+                </td>
+            </tr>
+
+            <tr>
+                <th>Magnet Link:</th>
+                <td>@Model.MagnetLink</td>
+            </tr>
+
+            <tr>
+                <th>Infohash:</th>
+                <td>@Model.ID</td>
+            </tr>
+            <tr>
+                <th>Category:</th>
+                <td>@Model.Type</td>
+            </tr>
+            <tr>
+                <th>Size:</th>
+                <td>@Model.Size</td>
+            </tr>
+            <tr>
+                <th class="accordion"><u>Show/Hide Files:</u></th>
+                <td class="panel" id="infoCount">@Model.NrFiles</td>
+                <!-- hidden-->
+                <td class="panel" id="infoFiles">
+                    <table class="table table-condensed table-responsive">
+                        <thead>
+                            <tr>
+                                <th>File Name</th>
+                                <th>Size</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                        if (Model != null)
+                        {
+                            foreach (var file in Model.Files)
+                            {
+                                <tr>
+                                    <td class="">@file.Name</td>
+                                    <td class="">@file.Size</td>
+                                </tr>
+                    }
+                }
+                            }
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <th>Added:</th>
+                <td>@Model.Date</td>
+            </tr>
+            <tr>
+                <th>Peers:</th>
+                <td>@Model.PeerNumber</td>
+            </tr>
+            <tr>
+                <th>Tags:</th>
+                <td>@Model.Categories</td>
+            </tr>
+        </table>
+    </div>
+</div>
 

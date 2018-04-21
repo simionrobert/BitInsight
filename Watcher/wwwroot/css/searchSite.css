@@ -17,8 +17,9 @@
 }
 
 .marginHeader {
-    margin-top: 50px;
+    margin-top: 20px;
     margin-bottom: 35px;
+    margin-left:5%;
 }
 
 .marginbtm {
@@ -31,6 +32,27 @@
 
 .inlineBlock {
     display: inline-block;
+}
+
+/* Libs added*/
+.accordion {
+    cursor: pointer;
+    border: none;
+    text-align: left;
+    outline: none;
+    transition: 0.4s;
+}
+
+    .active, .accordion:hover {
+        background-color: #ccc;
+    }
+
+.panel {
+    padding: 0 18px;
+    background-color: white;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.2s ease-out;
 }
 
 /* Hide/rearrange for smaller screens */

@@ -3,5 +3,36 @@
     ViewData["Title"] = "Index";
 }
 
-<h2>Index</h2>
+<h2>Browse torrents</h2>
+
+<div class="categoryContainer container-fluid">
+    <div classs="row .bottom-buffer">
+        <div class="col-sm-6">
+            <a asp-controller="Search" asp-action="Index" asp-route-id="audio"> Audio </a>
+        </div>
+        <div class="col-sm-6">
+            <a asp-controller="Search" asp-action="Index" asp-route-id="games"> Games </a>
+        </div>
+    </div>
+
+    <div classs="row">
+        <div class="col-sm-6">
+            <a asp-controller="Search" asp-action="Index" asp-route-id="video"> Video </a>
+            <div class="subcategories">
+                <a asp-controller="Search" asp-action="Index" asp-route-id="movie"> Movie, </a>
+                <a asp-controller="Search" asp-action="Index" asp-route-id="tvshow"> TV Show </a>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <a asp-controller="Search" asp-action="Index" asp-route-id="other"> Other </a>
+            <div class="subcategories">
+                <a asp-controller="Search" asp-action="Index" asp-route-id="pictures"> Pictures, </a>
+                <a asp-controller="Search" asp-action="Index" asp-route-id="ebooks"> Ebooks, </a>
+                <a asp-controller="Search" asp-action="Index" asp-route-id="documents"> Documents </a>
+            </div>
+        </div>
+    </div>
+
+</div>
+
 

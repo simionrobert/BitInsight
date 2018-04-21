@@ -16,5 +16,6 @@ namespace WatcherDataLayer
         Torrent getById(String id);
         void Add(Torrent newTorrent);
         IEnumerable<IP> getTorrentIPsById(String id);
+        IEnumerable<Torrent> GetTorrentsByCategory(String type);
     }
 }

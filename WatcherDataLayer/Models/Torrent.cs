@@ -32,23 +32,5 @@ namespace WatcherDataLayer.Models
             }
         }
 
-        public String FormattedCategories
-        {
-            get{
-                String desc = "";
-
-                if (Categories != null && Categories.Count() != 0)
-                {
-
-                    foreach (var cat in Categories)
-                    {
-                        desc += cat + ", ";
-                    }
-                    desc = desc.Substring(0, desc.Length - 2);
-                }
-
-                return desc;
-            }
-        }
     }
 }

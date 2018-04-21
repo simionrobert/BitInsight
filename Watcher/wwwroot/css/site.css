@@ -24,12 +24,28 @@
     margin-bottom: 200px;
 }
 
+.bottom-buffer {
+    margin-bottom: 20px;
+}
+
 .text-center {
     text-align: center;
 }
 
 .subtitle {
     color: gray;
+}
+
+.subcategories {
+    margin-left:2%;
+    font-size:12px;
+}
+
+.categoryContainer {
+    max-width: 45%;
+    margin: 0 auto;
+    align-items: center;
+    justify-content: space-around;
 }
 
 /* Hide/rearrange for smaller screens */

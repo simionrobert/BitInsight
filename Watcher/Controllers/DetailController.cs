@@ -27,24 +27,28 @@ namespace Watcher.Controllers
 
                 ID = result.ID,
                 Name = result.Name,
-                Date = new DateTime(1970, 1, 1).AddMilliseconds(Double.Parse(result.Date)),
-                Categories = result.FormattedCategories,
+                Date = FormatterUtil.FormatDate(result.Date),
+                Categories = FormatterUtil.FormatCategories(result.Categories),
                 Type = result.Type,
                 MagnetLink = result.MagnetLink,
-                Size = (result.Files.Sum(x => x.Size)) < 1000000000
-                ? (result.Files.Sum(x => x.Size) / 1000000.00).ToString("f2") + " MB"
-                : (result.Files.Sum(x => x.Size) / 1000000000.00).ToString("f2") + " GB",
+                Size = FormatterUtil.FormatBytes(result.Files.Sum(x => x.Size)),
                 PeerNumber = _torrentService.getTorrentIPsById(result.ID).Count(),
-                Files = result.Files,
+                Files = result.Files.Select(file => new FileDetailModel
+                {
+                    Name = file.Name,
+                    Size = FormatterUtil.FormatBytes(file.Size)
+                }),
+                NrFiles = result.Files.Count(),
                 IPs = _torrentService.getTorrentIPsById(result.ID).Select(ipResults => new IPIndexListingModel
                 {
                     ID = ipResults.ID,
                     IPs = ipResults.IPs,
-                    Date = new DateTime(1970, 1, 1).AddMilliseconds(Double.Parse(ipResults.Date))
+                    Date = FormatterUtil.FormatDate(ipResults.Date)
                 })
             };
 
             return View(model);
         }
+
     }
 }

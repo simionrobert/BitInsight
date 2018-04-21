@@ -1,11 +1,14 @@
 ﻿@model TorrentIndexModel
 @{
-    ViewData["Title"] = "Search Index";
+    ViewData["Title"] = "Search Results";
     Layout = "_LayoutSearch";
 }
 
+<div id="jsGrid">
+
+</div>
+
 <div id="assets">
-    <h3>Search results...</h3>
     <div id="assetsTable">
         <table class="table table-condensed" id="catalogIndexTable">
             <thead>
@@ -50,3 +53,7 @@
         </table>
     </div>
 </div>
+
+@section Scripts {
+    <script src="~/js/search.js"></script>
+}

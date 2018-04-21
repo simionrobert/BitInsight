@@ -84,6 +84,11 @@ namespace WatcherDataLayer
             return torrents;
         }
 
+        public IEnumerable<Torrent> GetTorrentsByCategory(String type)
+        {
+            throw new NotImplementedException();
+        }
+
         public IEnumerable<Torrent> GetAllTorrentsSortedPeers()
         {
             //TODO: Implement sorted peers
@@ -122,7 +127,7 @@ namespace WatcherDataLayer
 
         public Torrent GetTorrentByID(String id)
         {
-            var searchResponse = _client.Get<Torrent>(id, idx => idx.Index("torrent"));
+            var searchResponse = _client.Get<Torrent>(id, idx => idx.Index("torrent").Type("doc"));
 
             var torrent = searchResponse.Source;
             torrent.ID = searchResponse.Id;

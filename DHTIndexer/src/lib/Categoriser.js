@@ -112,8 +112,6 @@ class Categorizer {
             torrent.categories.push('XXX');
         } else if (file.name.toLowerCase().indexOf('fuck') > -1) {
             torrent.categories.push('XXX');
-        } else  if (file.name.toLowerCase().indexOf('cam') > -1) {
-            torrent.categories.push('XXX');
         } else if (file.name.toLowerCase().indexOf('sex') > -1) {
             torrent.categories.push('XXX');
         } else if (file.name.toLowerCase().indexOf('censored') > -1) {

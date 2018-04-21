@@ -30,6 +30,12 @@ namespace WatcherBusinessLayer
             return _context.GetTorrentsByName(name);
         }
 
+
+        public IEnumerable<Torrent> GetTorrentsByCategory(String type)
+        {
+            return _context.GetTorrentsByCategory(type);
+        }
+
         public Torrent getById(string id)
         {
             return _context.GetTorrentByID(id);

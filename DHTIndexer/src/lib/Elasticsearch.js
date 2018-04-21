@@ -40,8 +40,8 @@ class ElasticSearch {
 
         for (let i = 0; i < torrent.files.length; i++) {
             jsonObject.Files.push({
-                file: torrent.files[i].name,
-                size: torrent.files[i].size
+                Name: torrent.files[i].name,
+                Size: torrent.files[i].size
             });
         }
 
