@@ -6,7 +6,7 @@ class Categorizer {
 
     /*
      *Type is determined solely by extension
-     * Category is determined by name
+     * Type is determined by name
      */
     constructor(opts, metadataFlag, ipFlag) {
         this.videoFormats = ['.wma', '.3g2', '.3gp', '.amv', '.asf', '.avi', '.drc', '.f4a', '.f4b', '.f4p', '.f4v', '.flv', '.gif', '.gifv', '.m2v', '.m4p', '.m4v', '.mkv', '.mng', '.mov', '.mp2', '.mp4', '.mpe', '.mpeg', '.mpg', '.mpv', '.mxf', '.net', '.nsv', '.ogv', '.qt', '.rm', '.rmvb', '.roq', '.svi', '.vob', '.webm', '.wmv', '.yuv'];

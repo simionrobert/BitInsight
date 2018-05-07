@@ -1,58 +1,18 @@
-﻿@model TorrentIndexModel
-@{
+﻿@{
     ViewData["Title"] = "Search Results";
-    Layout = "_LayoutSearch";
 }
 
-<div id="jsGrid">
 
-</div>
+<h3 class="search-title">@ViewBag.QuerryTitle</h3>
 
-<div id="assets">
-    <div id="assetsTable">
-        <table class="table table-condensed" id="catalogIndexTable">
-            <thead>
-                <tr>
-                    <th>Category</th>
-                    <th>Name</th>
-                    <th>Added</th>
-                    <th>Size</th>
-                    <th>Peers</th>
-                </tr>
-            </thead>
-            <tbody>
-                @{
-                    if (Model != null)
-                    {
-                        foreach (var torrent in Model.models)
-                        {
-                            <tr class="assetRow">
-                                <td class="">@torrent.Type</td>
-                                <td class="">
-                                    <a asp-controller="Detail" asp-action="Index" asp-route-id="@torrent.ID">
-                                        @torrent.Name
-                                    </a>
-                                    <p class="subtitle">
-                                        <a href="@torrent.MagnetLink" class="noborder">
-                                            <i class="glyphicon glyphicon-magnet"></i>
-                                        </a>
 
-                                        <small>
-                                            @torrent.Categories
-                                        </small>
-                                    </p>
-                                </td>
-                                <td class="">@torrent.Date</td>
-                                <td class="">@torrent.Size</td>
-                                <td class="">@torrent.PeerNumber</td>
-                            </tr>
-                        }
-                    }
-                }
-            </tbody>
-        </table>
-    </div>
-</div>
+<form class="search-form form" asp-controller="Search" asp-action="Index">
+    <input type="text" class="form-control search-bar" placeholder="Pirate Search" name="input" autofocus>
+    <button type="submit" class="search-button btn btn-primary">Pirate Search</button>
+</form>
+
+<div id="jsGrid"></div>
+
 
 @section Scripts {
     <script src="~/js/search.js"></script>

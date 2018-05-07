@@ -4,7 +4,7 @@ using System.Text;
 
 namespace WatcherDataLayer.Models
 {
-    public class IP
+    public class SetIPs
     {
         public String ID { get; set; }
         public IEnumerable<String> IPs{ get; set; }

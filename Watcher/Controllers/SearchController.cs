@@ -2,8 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Watcher.Models;
 using Watcher.Models.Search;
 using WatcherDataLayer;
 using WatcherDataLayer.Models;
@@ -12,78 +10,103 @@ namespace Watcher.Controllers
 {
     public class SearchController : Controller
     {
-        private ITorrent _torrentService;
+        private ElasticSearchDB _databaseService;
 
-        public SearchController(ITorrent torrents)
+        public SearchController(ElasticSearchDB databaseService)
         {
-            _torrentService = torrents;
+            _databaseService = databaseService;
         }
 
-
-        public IActionResult Index(String input)
+        public IActionResult Index(String q)
         {
-            IEnumerable<Torrent> torrents = null;
-            if (input == "")
-                torrents = _torrentService.getAll();
+            if (Utils.ValidateIPv4(q))
+                ViewBag.QuerryTitle = "All torrents downloaded/uploaded by "+q;
+            else if(q!=null)
+                ViewBag.QuerryTitle = "Search result for " + q;
             else
-                torrents = _torrentService.GetTorrentsByName(input);
-
-            TorrentIndexModel model = ModeliseSearch(torrents);
-
-            return View(model);
+                ViewBag.QuerryTitle = "Search result...";
+            return View();
         }
 
         public IActionResult Recent()
         {
-            IEnumerable<Torrent> torrents = _torrentService.GetAllTorrentsSortedDate();
-
-            TorrentIndexModel model = ModeliseSearch(torrents);
-
-
-            return View("~/Views/Search/Index.cshtml", model);
+            ViewBag.QuerryTitle = "Recent torrents";
+            return View("~/Views/Search/Index.cshtml");
         }
 
         public IActionResult Top()
         {
-            IEnumerable<Torrent> torrents = _torrentService.GetAllTorrentsSortedPeers();
-
-
-            TorrentIndexModel model = ModeliseSearch(torrents);
-
-            return View("~/Views/Search/Index.cshtml", model);
+            ViewBag.QuerryTitle = "Top 100 torrents";
+            return View("~/Views/Search/Index.cshtml");
         }
 
-        public IActionResult Browse(String type)
+        public JsonResult SearchJSON(String q, int pageIndex, int pageSize, String sortField, String sortOrder)
         {
-            IEnumerable<Torrent> torrents = _torrentService.GetTorrentsByCategory(type);
+            IEnumerable<Torrent> torrents = null;
+            int startIndex = (pageIndex - 1) * pageSize;
+
+            // first level querry
+            if (q == null)
+                torrents = _databaseService.GetTorrents(startIndex, pageSize, sortField, sortOrder);
+            else if (Utils.ValidateIPv4(q)) //TODO: Searching IPs gives IP description not torrents
+                torrents = _databaseService.GetTorrentsByIP(q, startIndex, pageSize, sortField, sortOrder);
+            else
+                torrents = _databaseService.SearchTorrentsByName(q, startIndex, pageSize, sortField, sortOrder);
 
 
-            TorrentIndexModel model = ModeliseSearch(torrents);
+            IEnumerable<TorrentIndexListingModel> models = ModeliseSearch(torrents);
 
-            return View("~/Views/Search/Index.cshtml", model);
+            return Json(new {
+                data = models,
+                itemsCount = models.Count()
+            });
         }
 
-        private TorrentIndexModel ModeliseSearch(IEnumerable<Torrent> torrents)
+        public JsonResult RecentJSON(int pageIndex, int pageSize, String sortField, String sortOrder)
+        {
+            int startIndex = (pageIndex - 1) * pageSize;
+            IEnumerable<Torrent> torrents = _databaseService.GetTorrents(startIndex, pageSize, sortField, sortOrder);
+
+            torrents = torrents.Skip(startIndex).Take(pageSize).Select(x => x);
+            IEnumerable<TorrentIndexListingModel> models = ModeliseSearch(torrents);
+
+            return Json(new
+            {
+                data = models,
+                itemsCount = models.Count()
+            });
+        }
+
+        public JsonResult TopJSON()
+        {
+
+            IEnumerable<Torrent> torrents = _databaseService.GetTorrents(1, 100, null, null);
+            IEnumerable<TorrentIndexListingModel> models = ModeliseSearch(torrents);
+
+            return Json(new
+            {
+                data = models,
+                itemsCount = models.Count()
+            });
+        }
+
+        private IEnumerable<TorrentIndexListingModel> ModeliseSearch(IEnumerable<Torrent> torrents)
         {
             var listingResult = torrents.Select(result => new TorrentIndexListingModel
             {
                 ID = result.ID,
                 Name = result.Name,
                 Date = FormatterUtil.FormatDate(result.Date),
-                Categories = FormatterUtil.FormatCategories(result.Categories),
+                Categories = FormatterUtil.FormatTags(result.Categories),
                 Type = result.Type,
                 MagnetLink = result.MagnetLink,
                 Size = FormatterUtil.FormatBytes(result.Files.Sum(x => x.Size)),
-                PeerNumber = _torrentService.getTorrentIPsById(result.ID).Count()
+                PeerNumber = _databaseService.GetIPsByTorrent(result.ID).IPs.Count()
             });
 
-
-            TorrentIndexModel model = new TorrentIndexModel
-            {
-                models = listingResult
-            };
-
-            return model;
+            return listingResult;
         }
+
+
     }         
 }

@@ -20,7 +20,7 @@ namespace WatcherBusinessLayer
             throw new NotImplementedException();
         }
 
-        public IEnumerable<Torrent> getAll()
+        public IEnumerable<Torrent> getAll(int startIndex, int size)
         {
             return _context.GetAllTorrents();
         }

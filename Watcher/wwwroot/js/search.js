@@ -1,51 +1,163 @@
 ﻿//// Write your JavaScript code.
 
 
-//$(document).ready(function () {
+$(document).ready(function () {
+    var pathname = window.location.pathname;
 
-//    $("#jsGrid").jsGrid({
-//        width: "100%",
-//        height: "auto",
+    switch (pathname) {
+        case "/Search": // From search input
+            $("#jsGrid").jsGrid({
+                width: "100%",
 
-//        autoload: true,
-//        selecting: true,
-//        sorting: true,
-//        paging: true,
-//        pageSize: 15,
-//        pageLoading: true,
-//        pageIndex: 1,
+                autoload: true,
+                selecting: false,
+                sorting: true,
+                paging: true,
+                pageSize: 15,
+                pageLoading: true,
+                pageIndex: 1,
 
 
-//        controller: {
-//            loadData: function (filter) {
-//                var startIndex = (filter.pageIndex - 1) * filter.pageSize;
-//                var endIndex = startIndex + filter.pageSize;
+                controller: {
+                    loadData: function (filter) {
 
-//                var data = $.Deferred();
-//                $.ajax({
-//                    type: "GET",
-//                    contentType: "application/json",
-//                    url: "/Search/Index",
-//                    data: filter
-//                }).done(function (response) {
-//                    data.resolve(response);
-//                });
+                        var url = window.location.search;
+                        url = url.replace("?q=", '');
 
-//                return data.promise();
+                        var data = $.Deferred();
+                        $.ajax({
+                            type: "GET",
+                            contentType: "application/json",
+                            url: "/Search/SearchJSON?q=" + url,
+                            data: filter
+                        }).done(function (response) {
+                            data.resolve(response);
+                        });
 
-//                //return {
-//                //    data: db.clients.slice(startIndex, endIndex),
-//                //    itemsCount: db.clients.length
-//                //};
-//            }
-//        },
+                        return data.promise();
+                    }
+                },
 
-//        fields: [
-//            { name: "Category", type: "text" },
-//            { name: "Name", type: "text" },
-//            { name: "Added", type: "text" },
-//            { name: "Size", type: "text" },
-//            { name: "Peers", type: "number" }
-//        ]
-//    });
-//});
+                fields: [
+                    { name: "type", title: "Type", width: 10},
+                    {
+                        name: "name", title: "Name",
+                        itemTemplate: function (value, item) {
+                            var $title = $("<a>").attr("href", "/Detail/Index/" + item.id).text(value);
+
+                            //subtitle
+                            var $icon = $("<span>").attr("class", "glyphicon glyphicon-magnet");
+                            var $subText = $("<a>").attr("href", item.magnetLink).addClass("noborder").append($icon).append(" ");
+
+                            var $subtitle = $("<p>").addClass("subtitle").append($subText).append($("<small>").append(item.categories));
+
+
+                            return $("<div>").append($title).append($subtitle);
+                        }
+                    },
+                    {name: "date", title: "Added", type: "date",width: 20},
+                    { name: "size", title: "Size", type: "text", width: 10 },
+                    { name: "peerNumber", title: "Peers", type: "number", width: 5 }
+                ]
+            });
+            break;
+        case "/Search/Top":
+
+            $("#jsGrid").jsGrid({
+                width: "100%",
+
+                autoload: true,
+                selecting: false,
+                pageLoading: true,
+
+                controller: {
+                    loadData: function (filter) {
+                        var data = $.Deferred();
+                        $.ajax({
+                            type: "GET",
+                            contentType: "application/json",
+                            url: "/Search/TopJSON",
+                            data: filter
+                        }).done(function (response) {
+                            data.resolve(response);
+                        });
+
+                        return data.promise();
+                    }
+                },
+
+                fields: [
+                    { name: "type", title: "Type", width: 30 },
+                    {
+                        name: "name", title: "Name",
+                        itemTemplate: function (value, item) {
+                            var $title = $("<a>").attr("href", "/Detail/Index/" + item.id).text(value);
+
+                            var $icon = $("<span>").attr("class", "glyphicon glyphicon-magnet");
+                            var $subText = $("<a>").attr("href", item.magnetLink).addClass("noborder").append($icon).append(" ");
+                            var $subtitle = $("<p>").addClass("subtitle").append($subText).append($("<small>").append(item.categories));
+
+                            return $("<div>").append($title).append($subtitle);
+                        }
+                    },
+                    { name: "date", title: "Added", type: "date", width: 50 },
+                    { name: "size", title: "Size", type: "text", width: 25 },
+                    { name: "peerNumber", title: "Peers", type: "number", width: 10 }
+                ]
+            });
+            break;
+        case "/Search/Recent":
+
+            $("#jsGrid").jsGrid({
+                width: "100%",
+
+                autoload: true,
+                selecting: false,
+                sorting: true,
+                paging: true,
+                pageSize: 15,
+                pageLoading: true,
+                pageIndex: 1,
+
+
+                controller: {
+                    loadData: function (filter) {
+                        var data = $.Deferred();
+                        $.ajax({
+                            type: "GET",
+                            contentType: "application/json",
+                            url: "/Search/RecentJSON",
+                            data: filter
+                        }).done(function (response) {
+                            data.resolve(response);
+                        });
+
+                        return data.promise();
+                    }
+                },
+
+                fields: [
+                    { name: "type", title: "Type", width: 30 },
+                    {
+                        name: "name", title: "Name",
+                        itemTemplate: function (value, item) {
+                            var $title = $("<a>").attr("href", "/Detail/Index/" + item.id).text(value);
+
+                            //subtitle
+                            var $icon = $("<span>").attr("class", "glyphicon glyphicon-magnet");
+                            var $subText = $("<a>").attr("href", item.magnetLink).addClass("noborder").append($icon).append(" ");
+
+                            var $subtitle = $("<p>").addClass("subtitle").append($subText).append($("<small>").append(item.categories));
+
+
+                            return $("<div>").append($title).append($subtitle);
+                        }
+                    },
+                    { name: "date", title: "Added", type: "date", width: 50 },
+                    { name: "size", title: "Size", type: "text", width: 25 },
+                    { name: "peerNumber", title: "Peers", type: "number", width: 10 }
+                ]
+            });
+            break;
+    }
+});

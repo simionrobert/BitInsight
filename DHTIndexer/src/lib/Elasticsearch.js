@@ -21,6 +21,7 @@ class ElasticSearch {
     }
 
     indexTorrent(torrent) {
+        //TODO: Test size added
         var index = {
             index: {
                 _index: 'torrent',
@@ -30,20 +31,27 @@ class ElasticSearch {
         }
 
         var jsonObject = {
-                Name: torrent.name,
-                Search: torrent.name.replace(/\./g, ' ').replace(/_/g, ' '),
-                Type: torrent.type,
-                Categories: torrent.categories,
+            Name: torrent.name,
+            Search: torrent.name.replace(/\./g, ' ').replace(/_/g, ' '),
+            Type: torrent.type,
+            Categories: torrent.categories,
             Files: [],
+            Size:0,
             Date: Date.now()
         };
 
+        var size = 0;
         for (let i = 0; i < torrent.files.length; i++) {
             jsonObject.Files.push({
                 Name: torrent.files[i].name,
                 Size: torrent.files[i].size
             });
+
+            size += torrent.files[i].size;
         }
+
+        // Attribuite size to object
+        jsonObject.Size = size;
 
         this.recordTorrentQueue.push(index);
         this.recordTorrentQueue.push(jsonObject);
@@ -192,9 +200,23 @@ class ElasticSearch {
                 "mappings": {
                     "doc": {
                         "properties": {
-                            "Name": { "type": "text" },
+                            "Name": {
+                                "type": "text",
+                                "fields": {
+                                    "keyword": {
+                                        "type": "keyword"
+                                    }
+                                }
+                            },
                             "Search": { "type": "text" },
-                            "Type": { "type": "text" },
+                            "Type": {
+                                "type": "text",
+                                "fields": {
+                                    "keyword": {
+                                        "type": "keyword"
+                                    }
+                                }
+                            },
                             "Categories": { "type": "text" },
                             "Files": {
                                 "properties": {
@@ -202,8 +224,8 @@ class ElasticSearch {
                                     "Size": { "type": "long" }
                                 }
                             },
-                            "Date": {
-                                "type": "date"}
+                            "Size": { "type": "long" },
+                            "Date": {"type": "date"}
                         }
                     }
                 }

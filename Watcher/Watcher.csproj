@@ -14,7 +14,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\WatcherBusinessLayer\WatcherBusinessLayer.csproj" />
     <ProjectReference Include="..\WatcherDataLayer\WatcherDataLayer.csproj" />
   </ItemGroup>
 

@@ -2,12 +2,8 @@
 
 @{
     ViewData["Title"] = "Torrent Detail";
-    Layout = "_LayoutSearch";
 }
 
-@section Scripts {
-    <script type="text/javascript" src="/js/detail.js"></script>
-}
 
 <div id="assets">
     <h3 align="center">@Model.Name</h3>
@@ -35,7 +31,7 @@
                 <td>@Model.ID</td>
             </tr>
             <tr>
-                <th>Category:</th>
+                <th>Type:</th>
                 <td>@Model.Type</td>
             </tr>
             <tr>
@@ -80,10 +76,40 @@
                 <td>@Model.PeerNumber</td>
             </tr>
             <tr>
-                <th>Tags:</th>
+                <th>Categories:</th>
                 <td>@Model.Categories</td>
+            </tr>
+            <tr>
+                <th class="accordion" id="accordion2"><u>Show/Hide IPs:</u></th>
+                <!-- hidden-->
+                <td class="panel" id="infoIPs">
+                    <input type="text" class="form-control" id="searchIP" placeholder="Search IP...">
+                    <table class="table table-condensed table-responsive">
+                        <thead>
+                            <tr>
+                                <th>IP</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                            if (Model != null)
+                            {
+                                foreach (var ip in Model.IPs.IPs)
+                                {
+                                    <tr>
+                                        <td class="">@ip</td>
+                                    </tr>
+                                }
+                            }
+                              }
+                        </tbody>
+                    </table>
+                </td>
             </tr>
         </table>
     </div>
 </div>
 
+@section Scripts {
+    <script type="text/javascript" src="~/js/detail.js"></script>
+}

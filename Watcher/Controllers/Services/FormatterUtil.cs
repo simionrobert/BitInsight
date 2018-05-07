@@ -17,7 +17,7 @@ namespace Watcher.Controllers
                 return (bytes / 1000.00).ToString("f2") + " KB";
         }
 
-        public static String FormatCategories(IEnumerable<string> Categories)
+        public static String FormatTags(IEnumerable<string> Categories)
         {
             String desc = "";
 
@@ -34,9 +34,11 @@ namespace Watcher.Controllers
             return desc;
         }
 
-        public static DateTime FormatDate(string epoch)
+        public static String FormatDate(string epoch)
         {
-            return new DateTime(1970, 1, 1).AddMilliseconds(Double.Parse(epoch));
+            DateTime time = new DateTime(1970, 1, 1).AddMilliseconds(Double.Parse(epoch));
+
+            return time.ToString("g"); ;
         }
     }
 }

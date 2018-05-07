@@ -9,6 +9,6 @@ namespace Watcher.Models.Search
     {
         public String ID { get; set; }
         public IEnumerable<String> IPs { get; set; }
-        public DateTime Date { get; set; }
+        public String Date { get; set; }
     }
 }
