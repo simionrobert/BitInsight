@@ -109,6 +109,10 @@
     transition: max-height 0.2s ease-out;
 }
 
+.detail_title{
+    margin-top:70px;
+    margin-bottom:30px;
+}
 
 /* Hide/rearrange for smaller screens */
 @media screen and (max-width: 767px) {

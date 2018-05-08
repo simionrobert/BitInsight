@@ -17,10 +17,9 @@ namespace WatcherDataLayer.Models
         public String Type { get; set; }
         public IEnumerable<String> Categories { get; set; }
         public IEnumerable<File> Files { get; set; }
-        public String Date
-        {
-            get; set;
-        }
+        public String Date { get; set;}
+        public long Size { get; set; }
+        public int Peers { get; set; }
 
         public String MagnetLink
         {

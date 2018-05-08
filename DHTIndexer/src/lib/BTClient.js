@@ -6,7 +6,7 @@ const MetadataResolver = require('./MetadataResolver');
 const PeerDiscovery = require('./PeerDiscovery');
 const Categoriser = require('./Categoriser');
 const parseTorrent = require('parse-torrent')
-
+const utils = require('./utils');
 
 const fs = require('fs');
 
@@ -27,24 +27,26 @@ class BTClient extends EventEmitter{
         this.semaphore = false
         this.lastInfohashID = parseInt(fs.readFileSync('id.txt'), 10);
 
+        this.torrent = {};
+
         this.onPeer = function (peer, infohash, from) {
             this.listIP.push(peer);
         }
         this.onDiscoveryEnded = function (infohash) {
-            var torrent = {
+            var ip = {
                 infohash: infohash,
                 listIP: _.uniq(this.listIP)
             }
 
-            this.emit('ip', torrent);
+            this.torrent.ip = ip;
 
             this._nextInfohash();
         }
 
         this.onMetadata = function (torrent, remoteAddress) {
-            torrent = this.categoriser.parse(torrent)
 
-            this.emit('metadata', torrent);
+            var metadata = this.categoriser.parse(torrent)
+            this.torrent.metadata = metadata;
 
             this._nextInfohash();
         }
@@ -60,10 +62,9 @@ class BTClient extends EventEmitter{
                     return;
                 }
 
-                var torrent = this._parseMetadata(parsedTorrent)
-                torrent = this.categoriser.parse(torrent)
-
-                this.emit('metadata', torrent);
+                var metadata = utils.parseMetadata(parsedTorrent)
+                metadata = this.categoriser.parse(metadata)
+                this.torrent.metadata = metadata;
 
                 this._nextInfohash();
             }.bind(this))
@@ -88,6 +89,7 @@ class BTClient extends EventEmitter{
             this.lastInfohashID++;
             this.listIP = [];
             this.semaphore = false
+            this.torrent = {};
             var infohash = this.cache.shift();
 
             //create new PeerDiscovery for each infohash
@@ -121,6 +123,12 @@ class BTClient extends EventEmitter{
         this.semaphore = !(this.semaphore || !(this.metadataFlag & this.ipFlag))
 
         if (this.semaphore == false) {
+
+            // Minor adjustment here for easier ES queries
+            if (this.torrent.metadata!=null &&this.metadataFlag == true && this.ipFlag == true) {
+                this.torrent.metadata.Peers = this.torrent.ip.listIP.length;
+            }
+
             if (this.ipFlag) {
                 this.peerDiscovery.removeListener('peer', this.onPeer);
                 this.peerDiscovery.removeListener('timeout', this.onDiscoveryEnded);
@@ -128,36 +136,14 @@ class BTClient extends EventEmitter{
 
             this.peerDiscovery.destroy();
 
+            this.emit("torrent",this.torrent)
+
             setImmediate(function() {
                 this.startService();
             }.bind(this));
         }
     }
 
-
-
-    _parseMetadata(parsedTorrent) {
-        var files = [];
-
-        if (parsedTorrent.hasOwnProperty('files')) {
-
-            // multiple files
-            var l = parsedTorrent.files.length;
-            for (var i = 0; i < l; i++) {
-                files.push(
-                    {
-                        name: parsedTorrent.files[i].path,
-                        size: parsedTorrent.files[i].length
-                    });
-            }
-        }
-
-        return {
-            infohash: parsedTorrent.infoHash,
-            name: parsedTorrent.name,
-            files: files
-        }
-    }
 }
 
 module.exports = BTClient;

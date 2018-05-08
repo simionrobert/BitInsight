@@ -33,7 +33,7 @@ namespace Watcher.Controllers
                 Categories = FormatterUtil.FormatTags(result.Categories),
                 Type = result.Type,
                 MagnetLink = result.MagnetLink,
-                Size = FormatterUtil.FormatBytes(result.Files.Sum(x => x.Size)),
+                Size = FormatterUtil.FormatBytes(result.Size),
                 Files = result.Files.Select(file => new FileDetailModel
                 {
                     Name = file.Name,
@@ -46,7 +46,7 @@ namespace Watcher.Controllers
                     IPs = ips.IPs,
                     Date = FormatterUtil.FormatDate(ips.Date)
                 },
-                PeerNumber = ips.IPs.Count()
+                PeerNumber = result.Peers
             };
 
             return View(model);

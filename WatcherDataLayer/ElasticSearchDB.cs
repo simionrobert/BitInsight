@@ -15,61 +15,19 @@ namespace WatcherDataLayer
         public ElasticSearchDB(String connection)
         {
             ConnectionSettings settings = new ConnectionSettings(new Uri(connection))
-                .DefaultIndex("torrent")
-                .DisableDirectStreaming()
-                .OnRequestCompleted(apiCallDetails =>
-                {
-                    // log out the request and the request body, if one exists for the type of request
-                    if (apiCallDetails.RequestBodyInBytes != null)
-                    {
-                        Console.WriteLine($"{apiCallDetails.HttpMethod} {apiCallDetails.Uri} " +
-                            $"{Encoding.UTF8.GetString(apiCallDetails.RequestBodyInBytes)}");
-                        list.Add(
-                            $"{apiCallDetails.HttpMethod} {apiCallDetails.Uri} " +
-                            $"{Encoding.UTF8.GetString(apiCallDetails.RequestBodyInBytes)}");
-                    }
-                    else
-                    {
-                        Console.WriteLine($"{apiCallDetails.HttpMethod} {apiCallDetails.Uri}");
-                        list.Add($"{apiCallDetails.HttpMethod} {apiCallDetails.Uri}");
-                    }
-
-                    // log out the response and the response body, if one exists for the type of response
-                    if (apiCallDetails.ResponseBodyInBytes != null)
-                    {
-                        Console.WriteLine($"Status: {apiCallDetails.HttpStatusCode}" +
-                                 $"{Encoding.UTF8.GetString(apiCallDetails.ResponseBodyInBytes)}");
-                        list.Add($"Status: {apiCallDetails.HttpStatusCode}" +
-                                 $"{Encoding.UTF8.GetString(apiCallDetails.ResponseBodyInBytes)}");
-                    }
-                    else
-                    {
-                        Console.WriteLine($"Status: {apiCallDetails.HttpStatusCode}");
-                        list.Add($"Status: {apiCallDetails.HttpStatusCode}");
-                    }
-                });
-          
-
+                .DefaultIndex("torrent");
+ 
             _client = new ElasticClient(settings);
         }
 
         public IEnumerable<Torrent> GetTorrents(int startIndex, int size, String sortField, String sortOrder)
         {
-            switch (sortField)
-            {
-                case "type":
-                    return GetAllTorrents(startIndex, size, "Type.keyword", sortOrder);
-                case "name":
-                    return GetAllTorrents(startIndex,  size, "Name.keyword", sortOrder);
-                case "date":
-                    return GetAllTorrents(startIndex, size, "Date", sortOrder);
-                case "size":
-                    return GetAllTorrents(startIndex, size, "Size", sortOrder);
-                case "peerNumber":
-                    return GetAllTorrentsSortedByPeers(startIndex, size, sortOrder);
-                default:
-                    return GetAllTorrents(startIndex, size, "Date","desc");
-            }
+            sortField = Utils.ParseSortField(sortField);
+
+            if (sortField != null)
+                return GetAllTorrents(startIndex, size, sortField, sortOrder);
+            else
+                return GetAllTorrents(startIndex, size, "Date", "desc"); //default
         }
 
         public IEnumerable<Torrent> SearchTorrentsByName(String name, int startIndex, int size, String sortField, String sortOrder)
@@ -78,6 +36,8 @@ namespace WatcherDataLayer
 
             if (sortField != null)
             {
+                sortField = Utils.ParseSortField(sortField);
+
                 searchRequest = new SearchRequest<Torrent>("torrent", "doc")
                 {
 
@@ -122,13 +82,90 @@ namespace WatcherDataLayer
             return torrent;
         }
 
-        public IEnumerable<Torrent> GetTorrentsByCategory(String type)
+        public IEnumerable<Torrent> GetTorrentsByCategory(String type, int startIndex, int size, String sortField, String sortOrder)
         {
-            throw new NotImplementedException();
+            SearchRequest<Torrent> searchRequest;
+
+            if (sortField != null)
+            {
+                sortField = Utils.ParseSortField(sortField);
+
+                searchRequest = new SearchRequest<Torrent>("torrent", "doc")
+                {
+                    From = startIndex,
+                    Size = size,
+                    Sort = new List<ISort>
+                    {
+                        new SortField { Field = sortField, Order =  sortOrder.CompareTo("asc") == 0 ? SortOrder.Ascending : SortOrder.Descending }
+                    },
+                    Query = new TermQuery
+                    {
+                        Field = "Type.keyword",
+                        Value = type
+                    }
+                };
+            }
+            else
+            {
+                searchRequest = new SearchRequest<Torrent>("torrent", "doc")
+                {
+                    From = startIndex,
+                    Size = size,
+                    Query = new TermQuery
+                    {
+                        Field = "Type.keyword",
+                        Value = type
+                    }
+                };
+            }
+
+            var searchResponse = _client.Search<Torrent>(searchRequest);
+
+            return Converter.ConvertToTorrent(searchResponse);
         }
 
+        public IEnumerable<Torrent> GetTorrentsByTags(String type, int startIndex, int size, String sortField, String sortOrder)
+        {
+            SearchRequest<Torrent> searchRequest;
 
 
+            if (sortField != null)
+            {
+                sortField = Utils.ParseSortField(sortField);
+
+                searchRequest = new SearchRequest<Torrent>("torrent", "doc")
+                {
+                    From = startIndex,
+                    Size = size,
+                    Sort = new List<ISort>
+                    {
+                        new SortField { Field = sortField, Order =  sortOrder.CompareTo("asc") == 0 ? SortOrder.Ascending : SortOrder.Descending }
+                    },
+                    Query = new TermQuery
+                    {
+                        Field = "Categories.keyword",
+                        Value = type
+                    }
+                };
+            }
+            else
+            {
+                searchRequest = new SearchRequest<Torrent>("torrent", "doc")
+                {
+                    From = startIndex,
+                    Size = size,
+                    Query = new TermQuery
+                    {
+                        Field = "Categories.keyword",
+                        Value = type
+                    }
+                };
+            }
+
+            var searchResponse = _client.Search<Torrent>(searchRequest);
+
+            return Converter.ConvertToTorrent(searchResponse);
+        }
 
         private IEnumerable<Torrent> GetAllTorrents(int startIndex, int size, String sortField, String sortOrder)
         {
@@ -149,12 +186,6 @@ namespace WatcherDataLayer
             return Converter.ConvertToTorrent(searchResponse);
         }
 
-        private IEnumerable<Torrent> GetAllTorrentsSortedByPeers(int startIndex, int size, String sortOrder)
-        {
-            //TODO: Implement sorted peers
-            return GetAllTorrents(startIndex, size, "", sortOrder);
-        }
-    
 
         /// <summary>
         /// ///////////////////////////////////////////////////////////////////////////////////////
@@ -170,9 +201,7 @@ namespace WatcherDataLayer
                  )
              );
 
-            var ips = Converter.ConvertToIP(searchResponse);
-
-            return ips;
+            return Converter.ConvertToIP(searchResponse); ;
         }
 
         public SetIPs  GetIPsByTorrent(String id)
@@ -191,48 +220,132 @@ namespace WatcherDataLayer
 
         public IEnumerable<Torrent> GetTorrentsByIP(String ip, int startIndex, int size, String sortField, String sortOrder)
         {
-            // TODO: Implement By IP
-            var searchResponse = _client.Search<SetIPs>(s => s
-             .Index("ip")
-             .Type("doc")
-             .StoredFields(sf => sf
-                .Fields(
-                    f => f.ID
-                )
-             )
-              .Query(q => q
-                     .Match(m => m
-                        .Field(f => f.IPs)
-                        .Query(ip)
-                     )
-              )
-            );
 
-            var ips = searchResponse.Fields;
+            // Get all torrents IDs from IP
+            SearchRequest<SetIPs> searchRequestIP = new SearchRequest<SetIPs>("ip", "doc")
+            {
+                Source = false,
+                Query = new TermQuery
+                {
+                    Field = "IPs",
+                    Value = ip
+                }
+            };
 
-            //TODO: Get torrents with these ids
-            throw new NotImplementedException();
+            List<String> listID = new List<string>();
+            var searchResponseIP = _client.Search<SetIPs>(searchRequestIP);
+            foreach(var d in searchResponseIP.Hits)
+            {
+                listID.Add(d.Id);
+            }
+            String[] stringsID = listID.ToArray();
+
+
+            // Get torrents with these IDs
+            SearchRequest<Torrent> searchRequest;
+
+            if (sortField != null)
+            {
+                sortField = Utils.ParseSortField(sortField);
+
+                searchRequest = new SearchRequest<Torrent>("torrent", "doc")
+                {
+
+                    From = startIndex,
+                    Size = size,
+                    Sort = new List<ISort>
+                    {
+                        new SortField { Field = sortField, Order =  sortOrder.CompareTo("asc") == 0 ? SortOrder.Ascending : SortOrder.Descending }
+                    },
+                    Query = new TermsQuery
+                    {
+                        Field = "_id",
+                        Terms = stringsID
+                    }
+                };
+            }
+            else
+            {
+                searchRequest = new SearchRequest<Torrent>("torrent", "doc")
+                {
+                    From = startIndex,
+                    Size = size,
+                    Query = new TermsQuery
+                    {
+                        Field = "_id",
+                        Terms = stringsID
+                    }
+                };
+            }
+
+            var searchResponse = _client.Search<Torrent>(searchRequest);
+
+            return Converter.ConvertToTorrent(searchResponse);
         }
 
-        public int GetTorrentCountByCategory(String category)
+        public Dictionary<String, long> GetTorrentPeerCountByCategory()
         {
-            //TODO: Implement this
-            return 5;
-            throw new NotImplementedException();
+            Dictionary<String, long> categories = new Dictionary<string, long>();
+
+            var request = new SearchRequest("torrent", "doc")
+            {
+                Aggregations = new Dictionary<string, IAggregationContainer>
+                {
+                    { "my_terms_agg", new AggregationContainer
+                        {
+                            Terms = new TermsAggregation("state")
+                            {
+                                Field = "Type.keyword"
+                            },
+                            Aggregations = new SumAggregation("commits_sum", "Peers")
+                            {
+                                Field = "Peers"
+                            }
+                        }
+                    }
+                }
+            };
+
+            var result = _client.Search<Torrent>(request);
+
+            var aggs = result.Aggregations.Terms("my_terms_agg");
+            foreach (var bucket in aggs.Buckets)
+            {
+                var x = bucket.Sum("commits_sum");
+                categories.Add(bucket.Key, (long)x.Value.Value);
+            }
+
+            return categories;
         }
 
-        public int GetTorrentPeerCountByCategory(String category)
+        public Dictionary<String, long> GetTorrentCountByCategory()
         {
-            return 10;
-            //TODO: Implement this
-            throw new NotImplementedException();
-        }
+            Dictionary<String,long> categories = new Dictionary<string, long>();
 
-        public String[] GetAllCategories()
-        {
-            //TODO: Implement this
-            return new String[] { "a", "b", "c" };
-            throw new NotImplementedException();
+            var request = new SearchRequest("torrent", "doc")
+            {
+                Aggregations = new Dictionary<string, IAggregationContainer>
+                {
+                    { "my_terms_agg", new AggregationContainer
+                        {
+                            Terms = new TermsAggregation("state")
+                            {
+                                Field = "Type.keyword"
+                            }
+                        }
+                    }
+                }
+            };
+
+            var result = _client.Search<Torrent>(request);
+
+            var aggs = result.Aggregations.Terms("my_terms_agg");
+            foreach (var bucket in aggs.Buckets)
+            {
+                categories.Add(bucket.Key,bucket.DocCount.Value);
+            }
+
+            return categories;
         }
     }
 }

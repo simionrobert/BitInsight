@@ -6,8 +6,8 @@
 <h3 class="search-title">@ViewBag.QuerryTitle</h3>
 
 
-<form class="search-form form" asp-controller="Search" asp-action="Index">
-    <input type="text" class="form-control search-bar" placeholder="Pirate Search" name="input" autofocus>
+<form  method="GET" class="search-form form" asp-controller="Search" asp-action="Index">
+    <input type="text" class="form-control search-bar" placeholder="Pirate Search" name="q" autofocus>
     <button type="submit" class="search-button btn btn-primary">Pirate Search</button>
 </form>
 

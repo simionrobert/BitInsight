@@ -7,17 +7,17 @@ namespace Watcher.Models
 {
     public class StatisticsModel
     {
-        public List<int> datasets;
+        public List<long> datasets;
         public List<String> labels;
 
         public StatisticsModel()
         {
-            datasets = new List<int>();
+            datasets = new List<long>();
             labels = new List<String>();
          
         }
 
-        public void putEntry(String s,int v)
+        public void putEntry(String s,long v)
         {
             labels.Add(s);
             datasets.Add(v);

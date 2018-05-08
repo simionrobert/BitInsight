@@ -12,24 +12,27 @@ var indexer = new ElasticSearch(config.DEFAULT_ELASTIC_SEARCH_OPTIONS);
 var btClient = new BTClient(config,1,1);
 
 
-btClient.on('metadata', function (torrent) {
+btClient.on('torrent', function (torrent) {
 
-    console.log('\n' + btClient.getID() + ". Infohash: " + torrent.infohash.toString('hex'));
-    console.log('Torrent sent to batch: ' + torrent.name);
+    console.log('\n' + btClient.getID() + ". Infohash: " + torrent.ip.infohash.toString('hex'));
 
-    setImmediate((torrent) => {
-        indexer.indexTorrent(torrent)
-    }, torrent);
-});
+    if (torrent.metadata != null) {
+        console.log('Torrent sent to batch: ' + torrent.metadata.name);
 
-btClient.on('ip', function (torrent) {
+        setImmediate((metadata) => {
+            indexer.indexTorrent(metadata)
+        }, torrent.metadata);
+    }
+    else
+        console.log('No metadata available');
 
-    console.log('\n' + btClient.getID() + ". Infohash: " + torrent.infohash.toString('hex'));
-    console.log('List ip sent to batch ' + torrent.listIP.length);
+    console.log('List ip sent to batch ' + torrent.ip.listIP.length);
 
-    setImmediate((torrent) => {
-        indexer.indexIP(torrent)
-    }, torrent);
+
+
+    setImmediate((ips) => {
+        indexer.indexIP(ips)
+    }, torrent.ip);
 });
 
 

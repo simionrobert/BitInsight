@@ -24,14 +24,12 @@ namespace Watcher.Controllers
 
         public JsonResult GetDownloadedCategoryDistribution()
         {
-
             StatisticsModel model = new StatisticsModel();
 
-            String[] categories = _databaseService.GetAllCategories();
-            for(int i = 0; i < categories.Length; i++)
+            Dictionary<String, long> categories = _databaseService.GetTorrentCountByCategory();
+            foreach(var key in categories)
             {
-                int value = _databaseService.GetTorrentCountByCategory(categories[i]);
-                model.putEntry(categories[i], value);
+                model.putEntry(key.Key,key.Value);
             }
 
             return Json(model);
@@ -41,11 +39,10 @@ namespace Watcher.Controllers
         {
             StatisticsModel model = new StatisticsModel();
 
-            String[] categories = _databaseService.GetAllCategories();
-            for (int i = 0; i < categories.Length; i++)
+            Dictionary<String, long> categories = _databaseService.GetTorrentPeerCountByCategory();
+            foreach (var key in categories)
             {
-                int value = _databaseService.GetTorrentPeerCountByCategory(categories[i]);
-                model.putEntry(categories[i], value);
+                model.putEntry(key.Key, key.Value);
             }
 
             return Json(model);

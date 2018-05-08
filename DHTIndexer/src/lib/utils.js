@@ -29,3 +29,27 @@ exports.decodeNodes = function (data) {
     }
     return nodes;
 };
+
+
+exports.parseMetadata = function (parsedTorrent) {
+    var files = [];
+
+    if (parsedTorrent.hasOwnProperty('files')) {
+
+        // multiple files
+        var l = parsedTorrent.files.length;
+        for (var i = 0; i < l; i++) {
+            files.push(
+                {
+                    name: parsedTorrent.files[i].path,
+                    size: parsedTorrent.files[i].length
+                });
+        }
+    }
+
+    return {
+        infohash: parsedTorrent.infoHash,
+        name: parsedTorrent.name,
+        files: files
+    }
+}

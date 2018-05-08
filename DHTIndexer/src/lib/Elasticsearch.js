@@ -21,7 +21,6 @@ class ElasticSearch {
     }
 
     indexTorrent(torrent) {
-        //TODO: Test size added
         var index = {
             index: {
                 _index: 'torrent',
@@ -36,6 +35,7 @@ class ElasticSearch {
             Type: torrent.type,
             Categories: torrent.categories,
             Files: [],
+            Peers: torrent.Peers,
             Size:0,
             Date: Date.now()
         };
@@ -171,9 +171,10 @@ class ElasticSearch {
         return listInfohashes;
     }
 
-    _getLastID() {
+     _getLastID() {
         this.client.search({
             index: 'ip',
+            size: 0,
             body: {
                 "aggs": {
                     "max_id": {
@@ -190,7 +191,7 @@ class ElasticSearch {
                 }
 
             this._id = response.aggregations.max_id.value + 1;
-        }.bind(this));
+            }.bind(this))
     }
 
     createTorrentIndex() {
@@ -217,13 +218,21 @@ class ElasticSearch {
                                     }
                                 }
                             },
-                            "Categories": { "type": "text" },
+                            "Categories": {
+                                "type": "text",
+                                "fields": {
+                                    "keyword": {
+                                        "type": "keyword"
+                                    }
+                                }
+                            },
                             "Files": {
                                 "properties": {
                                     "Name": { "type": "text" },
                                     "Size": { "type": "long" }
                                 }
                             },
+                            "Peers": { "type": "integer" },
                             "Size": { "type": "long" },
                             "Date": {"type": "date"}
                         }

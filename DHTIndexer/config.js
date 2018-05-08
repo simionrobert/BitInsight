@@ -39,8 +39,6 @@ module.exports = config;
 
 
 /*
-
-TODO: Separate parse torrent from btclient
 TODO: Add webtorrent tracker to download ips from trackers
 
 Done:
