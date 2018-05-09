@@ -1,4 +1,5 @@
 ﻿var crypto = require('crypto');
+const bencode = require('bencode');
 
 exports.generateRandomIDAsync = function (rinfo, nodeID, cb) {
 
@@ -31,7 +32,7 @@ exports.decodeNodes = function (data) {
 };
 
 
-exports.parseMetadata = function (parsedTorrent) {
+exports.parseMetadataTracker = function (parsedTorrent) {
     var files = [];
 
     if (parsedTorrent.hasOwnProperty('files')) {
@@ -50,6 +51,40 @@ exports.parseMetadata = function (parsedTorrent) {
     return {
         infohash: parsedTorrent.infoHash,
         name: parsedTorrent.name,
+        files: files
+    }
+}
+
+exports.parseMetadataDHT = function (rawMetadata, infohash) {
+    var metadata = bencode.decode(rawMetadata).info;
+
+    var torrentName = metadata.name.toString('utf-8');
+    var files = [];
+
+    if (metadata.hasOwnProperty('files')) {
+
+        // multiple files
+        var l = metadata.files.length;
+        for (var i = 0; i < l; i++) {
+            files.push(
+                {
+                    name: metadata.files[i].path.toString('utf-8'),
+                    size: metadata.files[i].length
+                });
+        }
+    } else {
+
+        // single file
+        files.push(
+            {
+                name: metadata.name.toString('utf-8'),
+                size: metadata.length
+            });
+    }
+
+    return {
+        infohash: infohash,
+        name: torrentName,
         files: files
     }
 }

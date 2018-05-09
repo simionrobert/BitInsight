@@ -3,9 +3,10 @@
 var EventEmitter = require('events')
 var PeerDiscovery = require('./PeerDiscovery');
 
+const parseTorrent = require('parse-torrent')
 const Protocol = require('bittorrent-protocol');
 const ut_metadata = require('ut_metadata');
-const bencode = require('bencode');
+
 const net = require('net');
 const utils = require('./utils');
 
@@ -23,6 +24,7 @@ class MetadataResolver extends EventEmitter {
         this.socketList = [];
         this.currentInfohash = null;
         this.remainingSec = 0;
+        this.torcacheURL = opts.torcacheURL;
 
         this._onDHTPeer = function (peer, infohash, from) {
             if (this.currentInfohash == infohash.toString('hex') && this.semaphore != 0) {
@@ -40,7 +42,23 @@ class MetadataResolver extends EventEmitter {
         this._setMetadataTimeout(this.timeout);
     }
 
+    downloadMetadataFromTracker(infohash) {
+        parseTorrent.remote(this.torcacheURL + infohash + ".torrent", function (err, parsedTorrent) {
+            if (err || typeof parsedTorrent === "undefined") {
+                this.emit("timeout Tracker")
+            } else {
+                if (this.semaphore != 0) {
+                    this._unregister();
+                    var torrent = utils.parseMetadataTracker(parsedTorrent)
+                    this.emit('metadata', torrent);
+                }
+            }
+        }.bind(this))
+    }
+
+
     _unregister() {
+        clearTimeout(this.remainingSec);
         this.semaphore = 0;
         this.peerDiscovery.removeListener('peer', this._onDHTPeer);
 
@@ -84,9 +102,7 @@ class MetadataResolver extends EventEmitter {
                     if (this.semaphore != 0) {
                         this._unregister();
 
-                        clearTimeout(this.remainingSec);
-
-                        var torrent = this._parseMetadata(rawMetadata);
+                        var torrent = utils.parseMetadataDHT(rawMetadata, this.currentInfohash);
                         this.emit('metadata', torrent)
                     }
                 }.bind(this));
@@ -99,40 +115,6 @@ class MetadataResolver extends EventEmitter {
         socket.connect(peer.port, peer.host, this._onPeerConnected);
     }
 
-
-    _parseMetadata(rawMetadata) {
-        var metadata = bencode.decode(rawMetadata).info;
-
-        var torrentName = metadata.name.toString('utf-8');
-        var files = [];
-
-        if (metadata.hasOwnProperty('files')) {
-
-            // multiple files
-            var l = metadata.files.length;
-            for (var i = 0; i < l; i++) {
-                files.push(
-                    {
-                        name: metadata.files[i].path.toString('utf-8'),
-                        size: metadata.files[i].length
-                    });
-            }
-        } else {
-
-            // single file
-            files.push(
-                {
-                    name: metadata.name.toString('utf-8'),
-                    size: metadata.length
-                });
-        }
-
-        return {
-            infohash: this.currentInfohash,
-            name: torrentName,
-            files: files
-        }
-    }
 }
 
 module.exports = MetadataResolver;

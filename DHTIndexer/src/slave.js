@@ -9,7 +9,7 @@ const BTClient = require('./lib/BTClient');
 const batchSize = 10;
 
 var indexer = new ElasticSearch(config.DEFAULT_ELASTIC_SEARCH_OPTIONS);
-var btClient = new BTClient(config,1,1);
+var btClient = new BTClient(config);
 
 
 btClient.on('torrent', function (torrent) {
@@ -28,6 +28,8 @@ btClient.on('torrent', function (torrent) {
 
     console.log('List ip sent to batch ' + torrent.ip.listIP.length);
 
+
+    console.log("\n///////////////////////////////////////////"); //to be deleted
 
 
     setImmediate((ips) => {

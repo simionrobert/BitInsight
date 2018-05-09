@@ -5,22 +5,20 @@ const _ = require('lodash');
 const MetadataResolver = require('./MetadataResolver');
 const PeerDiscovery = require('./PeerDiscovery');
 const Categoriser = require('./Categoriser');
-const parseTorrent = require('parse-torrent')
-const utils = require('./utils');
 
 const fs = require('fs');
 
 
-class BTClient extends EventEmitter{
-    constructor(opts, metadataFlag, ipFlag) {
+class BTClient extends EventEmitter {
+    constructor(opts) {
         super();
         if (!(this instanceof BTClient))
             return new BTClient(opts);
 
         this.opts = opts
-        this.metadataFlag = metadataFlag
-        this.ipFlag = ipFlag
-        this.torcacheURL = opts.DEFAULT_BTCLIENT_OPTIONS.torcacheURL
+        this.metadataFlag = opts.DEFAULT_BTCLIENT_OPTIONS.metadataFlag
+        this.ipFlag = opts.DEFAULT_BTCLIENT_OPTIONS.ipFlag
+       
 
         this.categoriser = new Categoriser();
         this.cache = [];
@@ -32,13 +30,12 @@ class BTClient extends EventEmitter{
         this.onPeer = function (peer, infohash, from) {
             this.listIP.push(peer);
         }
+
         this.onDiscoveryEnded = function (infohash) {
-            var ip = {
+            this.torrent.ip = {
                 infohash: infohash,
                 listIP: _.uniq(this.listIP)
             }
-
-            this.torrent.ip = ip;
 
             this._nextInfohash();
         }
@@ -52,25 +49,10 @@ class BTClient extends EventEmitter{
         }
 
         this.onMetadataTimeout = function (infohash) {
-            //failed with metadata dht fetcher
-
-            //try through torcache
-            parseTorrent.remote(this.torcacheURL + infohash + ".torrent", function (err, parsedTorrent) {
-
-                if (err || typeof parsedTorrent === "undefined") {
-                    this._nextInfohash();
-                    return;
-                }
-
-                var metadata = utils.parseMetadata(parsedTorrent)
-                metadata = this.categoriser.parse(metadata)
-                this.torrent.metadata = metadata;
-
-                this._nextInfohash();
-            }.bind(this))
+            this._nextInfohash();
         }
 
-        if (metadataFlag) {
+        if (this.metadataFlag) {
             this.metadataFetcher = new MetadataResolver(opts.DEFAULT_METADATA_FETCHER_OPTIONS);
             this.metadataFetcher.on('metadata', this.onMetadata.bind(this));
             this.metadataFetcher.on('timeout', this.onMetadataTimeout.bind(this));
@@ -100,9 +82,13 @@ class BTClient extends EventEmitter{
             }
 
             //register peerdiscovery to metadataFetcher
-            if (this.metadataFlag)
+            if (this.metadataFlag) {
                 this.metadataFetcher.register(infohash, this.peerDiscovery)
 
+                //try through torcache (its faster)
+                this.metadataFetcher.downloadMetadataFromTracker(infohash)
+            }
+               
             //start getting metadata
             this.peerDiscovery.lookup(infohash);
         } else {
@@ -118,6 +104,7 @@ class BTClient extends EventEmitter{
     getID() {
         return this.lastInfohashID
     }
+
 
     _nextInfohash() {
         this.semaphore = !(this.semaphore || !(this.metadataFlag & this.ipFlag))

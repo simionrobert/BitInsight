@@ -11,7 +11,8 @@ class PeerDiscovery extends EventEmitter {
             return new PeerDiscovery(opts)
 
         this._port = opts.port ? opts.port : 20000; // torrent port
-        this.timeout = opts.timeout || 3000;
+        this.timeout = opts.timeout || 9000;
+        this.timeout_initial = opts.timeout_initial || 2000;
         this.secRemaining = 0;
         this.currentInfohash = 0;
         this.semaphore = 0;
@@ -20,9 +21,7 @@ class PeerDiscovery extends EventEmitter {
 
         this._onDHTPeer = function (peer, infohash, from) {
             if (this.currentInfohash.equals(infohash)) {
-
                 clearTimeout(this.secRemaining);
-
                 this.emit('peer', peer, infohash, from);
 
                 this._setInfohashTimeout(infohash, this.timeout)
@@ -35,7 +34,7 @@ class PeerDiscovery extends EventEmitter {
 
     lookup(infohash) {
         this.currentInfohash = Buffer.from(infohash, 'hex');
-        this._setInfohashTimeout(infohash,this.timeout)
+        this._setInfohashTimeout(infohash, this.timeout_initial)
 
         this.dht.lookup(infohash);
     }
@@ -44,7 +43,6 @@ class PeerDiscovery extends EventEmitter {
         this.secRemaining = setTimeout(function () {
             if (this.semaphore == 0) {
                 this.semaphore = 1;
-
                 this.dht.removeListener('peer', this._onDHTPeer)
 
                 this.emit('timeout', infohash);

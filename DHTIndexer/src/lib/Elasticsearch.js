@@ -257,7 +257,7 @@ class ElasticSearch {
                     "doc": {
                         "properties": {
                             "ID": { "type": "long" },
-                            "IP": { "type": "ip" },
+                            "IPs": { "type": "ip" },
                             "Date": { "type": "date"}
                         }
                     }

@@ -12,13 +12,15 @@
 
     DEFAULT_PEER_DISCOVERY_OPTIONS : {
         port: 6880,
-        timeout: 6*1000,
+        timeout: 8 * 1000, //for rapid crawling put 2
+        timeout_initial: 2*1000,
         dht: false
     },
 
     DEFAULT_METADATA_FETCHER_OPTIONS: {
-        timeout: 9*1000,
-        socketTimeout: 5000
+        timeout: 6*1000, 
+        socketTimeout: 5000,
+        torcacheURL: "http://itorrents.org/torrent/"
     },
     
     DEFAULT_ELASTIC_SEARCH_OPTIONS: {
@@ -31,7 +33,8 @@
     },
 
     DEFAULT_BTCLIENT_OPTIONS: {
-        torcacheURL: "http://itorrents.org/torrent/"
+        metadataFlag: 1,
+        ipFlag:1
     }
 };
 
