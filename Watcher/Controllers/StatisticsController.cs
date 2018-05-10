@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Watcher.Models;
+using Watcher.Models.Statistics;
 using WatcherDataLayer;
 
 namespace Watcher.Controllers
@@ -19,17 +18,24 @@ namespace Watcher.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            Dictionary<String, long> categories = _databaseService.GetTorrentPeerCountByCategory();
+            long torrentNrWithDesc = _databaseService.GetTorrentsTotalNumber();
+            long torrentNrTotal = _databaseService.GetIPTotalNumber();
+            long torrentNrWithPeerListOnly = _databaseService.GetTorrentsWithIPList();
+
+
+            StatisticsModel model = new StatisticsModel(categories, torrentNrWithDesc, torrentNrTotal, torrentNrWithPeerListOnly);
+            return View(model);
         }
 
         public JsonResult GetDownloadedCategoryDistribution()
         {
-            StatisticsModel model = new StatisticsModel();
+            StatisticsModelJSON model = new StatisticsModelJSON();
 
             Dictionary<String, long> categories = _databaseService.GetTorrentCountByCategory();
             foreach(var key in categories)
             {
-                model.putEntry(key.Key,key.Value);
+                model.PutEntry(key.Key,key.Value);
             }
 
             return Json(model);
@@ -37,12 +43,26 @@ namespace Watcher.Controllers
 
         public JsonResult GetPopularityCategoryDistribution()
         {
-            StatisticsModel model = new StatisticsModel();
+            StatisticsModelJSON model = new StatisticsModelJSON();
 
             Dictionary<String, long> categories = _databaseService.GetTorrentPeerCountByCategory();
             foreach (var key in categories)
             {
-                model.putEntry(key.Key, key.Value);
+                model.PutEntry(key.Key, key.Value);
+            }
+
+            return Json(model);
+        }
+
+
+        public JsonResult GetIPTorrentDistribution()
+        {
+            StatisticsModelJSON model = new StatisticsModelJSON();
+
+            Dictionary<String, long> categories = _databaseService.GetIPTorrentDistribution();
+            foreach (var key in categories)
+            {
+                model.PutEntry(key.Key, key.Value);
             }
 
             return Json(model);

@@ -5,19 +5,19 @@ using System.Threading.Tasks;
 
 namespace Watcher.Models
 {
-    public class StatisticsModel
+    public class StatisticsModelJSON
     {
         public List<long> datasets;
         public List<String> labels;
 
-        public StatisticsModel()
+
+        public StatisticsModelJSON()
         {
             datasets = new List<long>();
             labels = new List<String>();
-         
         }
 
-        public void putEntry(String s,long v)
+        public void PutEntry(String s,long v)
         {
             labels.Add(s);
             datasets.Add(v);

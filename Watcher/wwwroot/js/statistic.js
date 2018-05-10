@@ -1,12 +1,47 @@
 ﻿$(document).ready(function () {
+    window.chartColors = {
+        red: 'rgb(255, 99, 132)',
+        orange: 'rgb(255, 159, 64)',
+        yellow: 'rgb(255, 205, 86)',
+        green: 'rgb(75, 192, 192)',
+        blue: 'rgb(54, 162, 235)',
+        purple: 'rgb(153, 102, 255)',
+        grey: 'rgb(201, 203, 207)'
+    };
+
+    var chartDataDownloaded = {};
+    var chartDataPopularity = {};
+    var chartDataIP = {};
+
     GetChartDataDownloaded();
     GetChartDataPopularity();
+    GetChartDataIP();
 });
 
-var chartDataDownloaded = {};
-var chartDataPopularity = {};
-
-var GetChartDataDownloaded = function () {
+function GetChartDataIP() {
+    $.ajax({
+        url: "/Statistics/GetIPTorrentDistribution",
+        method: 'GET',
+        dataType: 'json',
+        success: function (d) {
+            chartDataIP = {
+                datasets: [{
+                    data: d.datasets,
+                    label: 'Nr. Torrente',
+                    backgroundColor: window.chartColors.red,
+                    borderColor: window.chartColors.red,
+                    fill: false,
+                    pointRadius: 2,
+                    pointHoverRadius: 10,
+                    showLine: false // no line shown
+                }],
+                labels: d.labels
+            };
+            respondIPTorrentChart();
+        }
+    });
+};
+function GetChartDataDownloaded() {
     $.ajax({
         url: "/Statistics/GetDownloadedCategoryDistribution",
         method: 'GET',
@@ -23,7 +58,7 @@ var GetChartDataDownloaded = function () {
         }
     });
 };
-var GetChartDataPopularity = function () {
+function GetChartDataPopularity() {
     $.ajax({
         url: "/Statistics/GetPopularityCategoryDistribution",
         method: 'GET',
@@ -41,7 +76,6 @@ var GetChartDataPopularity = function () {
     });
 };
 
-
 function respondDownloadedChart() {
     var c = $('#pieNrChart');
     drawCanvas(c, chartDataDownloaded, 'Distributia Categoriilor (Numar torrente)');
@@ -50,13 +84,67 @@ function respondPopularityChart() {
     var c = $('#piePeersChart');
     drawCanvas(c, chartDataPopularity, 'Popularitate torrente (Numar Peers)');
 }
+function respondIPTorrentChart() {
+    var c = $('#lineChartIP');
+    drawLine(c, chartDataIP, 'Distributia IP/torrente');
+}
+
+function drawLine(c, chartData, display) {
+    var ctx = c.get(0).getContext("2d");
+    var container = c.parent();
+    var $container = $(container);
+    c.attr('width', $container.width()); //max width
+    c.attr('height', $container.height()); //max height     
+
+    new Chart(ctx, {
+        type: 'line',
+        data: chartData,
+        options: {
+            responsive: true,
+            title: {
+                display: true,
+                text: display
+            },
+            legend: {
+                display: false
+            },
+            elements: {
+                point: {
+                    pointStyle: 'star'
+                }
+            },
+            scales: {
+                xAxes: [{
+                    display: false,
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'IP-uri'
+                    },
+                    ticks: {
+                        autoSkip: true,
+                        maxTicksLimit: 1
+                    }
+                }],
+                yAxes: [{
+                    display: true,
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Torrente'
+                    },
+                    ticks: {
+                        stepSize: 1
+                    }
+                }]
+            },
+        }
+
+    });
+}
 
 function drawCanvas(c, chartData,display) {
     var ctx = c.get(0).getContext("2d");
     var container = c.parent();
-
     var $container = $(container);
-
     c.attr('width', $container.width()); //max width
     c.attr('height', $container.height()); //max height                   
 

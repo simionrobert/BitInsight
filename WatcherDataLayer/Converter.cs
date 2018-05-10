@@ -23,7 +23,7 @@ namespace WatcherDataLayer
 
         public static IEnumerable<SetIPs> ConvertToIP(ISearchResponse<SetIPs> response)
         {
-            var ips = response.Hits.Select(hit =>
+            IEnumerable<SetIPs> ips = response.Hits.Select(hit =>
             {
                 var result = hit.Source;
                 result.ID = hit.Id;

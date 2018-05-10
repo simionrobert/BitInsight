@@ -17,4 +17,9 @@
     <ProjectReference Include="..\WatcherDataLayer\WatcherDataLayer.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\lib\jsgrid\" />
+    <Folder Include="wwwroot\lib\chartjs\" />
+  </ItemGroup>
+
 </Project>

@@ -51,7 +51,7 @@ namespace Watcher.Controllers
             else if (Utils.ValidateIPv4(q)) //TODO: Searching IPs gives IP description not torrents
                 torrents = _databaseService.GetTorrentsByIP(q, startIndex, pageSize, sortField, sortOrder);
             else
-                torrents = _databaseService.SearchTorrentsByName(q, startIndex, pageSize, sortField, sortOrder);
+                torrents = _databaseService.SearchTorrentsByName(q, startIndex, pageSize, sortField, sortOrder); //Search by name
 
 
             IEnumerable<TorrentIndexListingModel> models = ModeliseSearch(torrents);
@@ -96,7 +96,7 @@ namespace Watcher.Controllers
             int startIndex = (pageIndex - 1) * pageSize;
             IEnumerable<Torrent> torrents;
 
-            if (tag==null)
+            if (tag==null) 
                 torrents = _databaseService.GetTorrentsByCategory(id, startIndex, pageSize, sortField, sortOrder);
             else
                 torrents = _databaseService.GetTorrentsByTags(id, startIndex, pageSize, sortField, sortOrder);
