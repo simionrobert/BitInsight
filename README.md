@@ -51,6 +51,10 @@ If you have some issues referring parts of code in the master branch add them in
 * [Crawling BitTorrent DHTs for Fun and Profit](https://www.usenix.org/legacy/event/woot10/tech/full_papers/Wolchok.pdf)
 * [Real-world sybil attacks in BitTorrent mainline DHT](https://www.researchgate.net/profile/Liang_Wang84/publication/261046350_Real-world_sybil_attacks_in_BitTorrent_mainline_DHT/links/550808160cf27e990e08c7bb/Real-world-sybil-attacks-in-BitTorrent-mainline-DHT.pdf)
 * [Kademlia: A Peer-to-peer Information System Based on the XOR Metric](http://www.ic.unicamp.br/~bit/ensino/mo809_1s13/papers/P2P/Kademlia-%20A%20Peer-to-Peer%20Information%20System%20Based%20on%20the%20XOR%20Metric%20.pdf)
+
+### Thank You
+I really appreciate all kinds of feedback and contributions.
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
