@@ -3,13 +3,9 @@
 var EventEmitter = require('events')
 var dgram = require('dgram');
 var bencode = require('bencode');
-var utils = require('./utils');
-var RoutingTable = require('./routingTable');
+var utils = require('../utils');
+var RoutingTable = require('./RoutingTable');
 
-var BOOTSTRAP_NODES = [
-    ['router.bittorrent.com', 6881],
-    ['dht.transmissionbt.com', 6881]
-];
 
 class DHTCrawler extends EventEmitter {
 
@@ -19,6 +15,7 @@ class DHTCrawler extends EventEmitter {
         this.address = options.address || '0.0.0.0';
         this.port = options.port || 6881;
         this.dhtAnnouncing = options.dhtAnnouncing || 1000;
+        this.BOOTSTRAP_NODES = options.BOOTSTRAP_NODES;
 
         this.verticalAttackMode = options.verticalAttackMode || false;
         this.verticalAttackNrNodes = options.verticalAttackNrNodes || 8;
@@ -44,7 +41,7 @@ class DHTCrawler extends EventEmitter {
             console.error("UDP error: %s", err);
         });
 
-        setInterval(function () {
+        this.refreshInterval = setInterval(function () {
             this.contactBootstrapNodes();
             this.horrizontalAttack();
 
@@ -58,8 +55,13 @@ class DHTCrawler extends EventEmitter {
         }.bind(this), this.dhtAnnouncing);
     }
 
+    end() {
+        clearInterval(this.refreshInterval);
+        this.socket.close();
+    }
+
     contactBootstrapNodes() {
-        BOOTSTRAP_NODES.forEach(function (node) {
+        this.BOOTSTRAP_NODES.forEach(function (node) {
             this.sendFindNodeRequest({ address: node[0], port: node[1] }, this.routingTable.nid);
         }.bind(this));
     }

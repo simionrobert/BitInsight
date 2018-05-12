@@ -3,7 +3,7 @@
 var MetadataResolver = require('../lib/MetadataResolver');
 var PeerDiscovery = require('../lib/PeerDiscovery');
 var config = require('../../config');
-const INFO_HASH1 = '5636cd5dadf6672ae29e538e5c82ed5e4a2bd562';   // ubuntu-16.04.1-server-amd64.iso
+const INFO_HASH1 = '8CA378DBC8F62E04DF4A4A0114B66018666C17CD';   // ubuntu-16.04.1-server-amd64.iso
 const INFO_HASH2 = '726b4809351adf6fedc6ad779762829bf5512ae1'
 
 
@@ -18,14 +18,14 @@ metadataFetcher.on('metadata', function (torrent) {
         console.log('\t' +torrent.files[i].name);
     }
 
-    reccursiveCall()
+    //reccursiveCall()
 
 });
 
 metadataFetcher.on('timeout', function (infohash) {
     console.log("Metadata Timeout: " + infohash.toString('hex'))
 
-    reccursiveCall()
+    //reccursiveCall()
 });
 
 function reccursiveCall() {
@@ -69,4 +69,6 @@ function reccursiveCall() {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 var peerDiscovery = new PeerDiscovery(config.DEFAULT_PEER_DISCOVERY_OPTIONS);
 metadataFetcher.register(INFO_HASH1, peerDiscovery)
+//try through torcache (its faster)
+metadataFetcher.downloadMetadataFromTracker(INFO_HASH1)
 peerDiscovery.lookup(INFO_HASH1);

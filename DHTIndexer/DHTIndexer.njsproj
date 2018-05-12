@@ -11,7 +11,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>bb3ae382-34e5-4b49-bd9a-74d9c07543a7</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>src\master.js</StartupFile>
+    <StartupFile>src\slave.js</StartupFile>
     <StartWebBrowser>False</StartWebBrowser>
     <SearchPath>
     </SearchPath>
@@ -31,16 +31,16 @@
     <Compile Include="config.js">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\lib\BTClient.js">
+    <Compile Include="src\lib\Metadata\Categoriser.js">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\lib\Categoriser.js">
+    <Compile Include="src\lib\Database\Elasticsearch.js">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\lib\Elasticsearch.js">
+    <Compile Include="src\lib\Metadata\MetadataService.js">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\index.js">
+    <Compile Include="src\lib\Metadata\PeerDiscoveryService.js">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\master.js">
@@ -58,15 +58,15 @@
     <Compile Include="src\test\testDHTCrawler.js">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\lib\DHTCrawler.js" />
-    <Compile Include="src\lib\MetadataResolver.js" />
-    <Compile Include="src\lib\RoutingTable.js">
+    <Compile Include="src\lib\Crawling\DHTCrawler.js" />
+    <Compile Include="src\lib\Metadata\MetadataResolver.js" />
+    <Compile Include="src\lib\Crawling\RoutingTable.js">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\lib\utils.js">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\lib\PeerDiscovery.js">
+    <Compile Include="src\lib\Metadata\PeerDiscovery.js">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\test\testElasticSearch.js">
@@ -81,13 +81,19 @@
     <Compile Include="src\test\testTorcache.js">
       <SubType>Code</SubType>
     </Compile>
-    <Content Include="id.txt" />
+    <Content Include="resource\countPerMinute.txt" />
+    <Content Include="resource\lastInfohashIdIPs.txt" />
+    <Content Include="resource\lastInfohashIdMetadata.txt" />
     <Content Include="package.json" />
     <Content Include="README.md" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="resource\" />
     <Folder Include="src\lib\" />
     <Folder Include="src\" />
+    <Folder Include="src\lib\Crawling\" />
+    <Folder Include="src\lib\Metadata\" />
+    <Folder Include="src\lib\Database\" />
     <Folder Include="src\test\" />
   </ItemGroup>
   <!-- Do not delete the following Import Project.  While this appears to do nothing it is a marker for setting TypeScript properties before our import that depends on them. -->

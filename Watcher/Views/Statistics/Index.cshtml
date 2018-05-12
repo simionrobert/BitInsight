@@ -8,8 +8,7 @@
     <script src="~/js/statistic.js"></script>
 }
 
-<h3 class="search-title">Statistics</h3>
-
+<h1 class="search-title">Statistics Elasticsearch Database</h1>
 <div class="container-fluid">
     <div class="row">
         <div class="col-md-6">
@@ -25,21 +24,15 @@
     </div>
 </div>
 
-
 <div class="container-fluid lineChartContainer">
-    <div class="row">
-        <div class="col-md-12">
-            <div>
-                <canvas id="lineChartIP"></canvas>
-            </div>
-        </div>
+    <div>
+        <canvas id="lineChartIP"></canvas>
     </div>
 </div>
 
-
 <div class="container-fluid writtenTablesContainer">
     <div class="row">
-        <div class="col-md-4">
+        <div class="col-md-5">
             <div class="table-responsive">
                 <table class="table table-condensed">
                     <caption>Torrent Categorisation (Nr. of Peers)</caption>
@@ -59,47 +52,45 @@
                                         <td class="">@kvp.Key</td>
                                         <td class="text-right">@kvp.Value</td>
                                     </tr>
-                }
-                }
+                                }
+                            }
                         }
                     </tbody>
                 </table>
             </div>
         </div>
-        <div class="col-md-2"></div>
-        <div class="col-md-4">
-                <div class="table-responsive">
-                    <table class="table table-condensed">
-                        <caption>Search Coverage</caption>
-                        <thead>
-                            <tr>
-                                <th>Title</th>
-                                <th class="text-right">Torrents</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td class="">
-                                    Torents with torrent description
-                                </td>
-                                <td class="text-right">@Model.torrentNrWithDesc</td>
-                            </tr>
-                            <tr>
-                                <td class="">
-                                    Torents with peer list
-                                </td>
-                                <td class="text-right">@Model.torrentNrWithPeerListOnly</td>
-                            </tr>
-                            <tr>
-                                <td class="">
-                                    Torrents total
-                                </td>
-                                <td class="text-right">@Model.torrentNrTotal</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-       </div>
+        <div class="col-md-5 col-md-offset-2">
+            <div class="table-responsive">
+                <table class="table table-condensed">
+                    <caption>Search Coverage</caption>
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th class="text-right">Torrents</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="">
+                                Torents with torrent description
+                            </td>
+                            <td class="text-right">@Model.torrentNrWithDesc</td>
+                        </tr>
+                        <tr>
+                            <td class="">
+                                Torents with peer list
+                            </td>
+                            <td class="text-right">@Model.torrentNrWithPeerListOnly</td>
+                        </tr>
+                        <tr>
+                            <td class="">
+                                Torrents total
+                            </td>
+                            <td class="text-right">@Model.torrentNrTotal</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
-
-

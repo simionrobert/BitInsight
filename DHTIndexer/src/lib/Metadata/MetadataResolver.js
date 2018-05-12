@@ -8,7 +8,7 @@ const Protocol = require('bittorrent-protocol');
 const ut_metadata = require('ut_metadata');
 
 const net = require('net');
-const utils = require('./utils');
+const utils = require('../utils');
 
 
 class MetadataResolver extends EventEmitter {
@@ -24,36 +24,30 @@ class MetadataResolver extends EventEmitter {
         this.socketList = [];
         this.currentInfohash = null;
         this.remainingSec = 0;
+        this.tracker = opts.tracker;
         this.torcacheURL = opts.torcacheURL;
+
 
         this._onDHTPeer = function (peer, infohash, from) {
             if (this.currentInfohash == infohash.toString('hex') && this.semaphore != 0) {
-                this._downloadMetadata(peer, infohash)
+                this._downloadMetadataFromDHTPeer(peer, infohash)
             }
         }
     }
 
-    register(infohash, peerDiscovery) {
+    start(infohash, peerDiscovery) {
         this.currentInfohash = infohash;
-        this.semaphore = 1
         this.peerDiscovery = peerDiscovery;
+        this.semaphore = 1
 
-        this.peerDiscovery.on('peer', this._onDHTPeer.bind(this));
-        this._setMetadataTimeout(this.timeout);
-    }
+ 
+        if (this.tracker == true) {
+            this._downloadMetadataFromTracker(infohash)//try through torcache first(its faster)
+        }
+        else {
+            this._downloadMetadataFromDHT(infohash); //try through DHT first
+        }
 
-    downloadMetadataFromTracker(infohash) {
-        parseTorrent.remote(this.torcacheURL + infohash + ".torrent", function (err, parsedTorrent) {
-            if (err || typeof parsedTorrent === "undefined") {
-                this.emit("timeout Tracker")
-            } else {
-                if (this.semaphore != 0) {
-                    this._unregister();
-                    var torrent = utils.parseMetadataTracker(parsedTorrent)
-                    this.emit('metadata', torrent);
-                }
-            }
-        }.bind(this))
     }
 
 
@@ -71,13 +65,35 @@ class MetadataResolver extends EventEmitter {
     _setMetadataTimeout(timeout) {
         this.remainingSec = setTimeout(function () {
             this._unregister()
-
             this.emit('timeout', this.currentInfohash);
         }.bind(this), timeout)
     }
 
+    _downloadMetadataFromDHT(infohash) {
+        this._setMetadataTimeout(this.timeout);
+        this.peerDiscovery.on('peer', this._onDHTPeer.bind(this));
+        this.peerDiscovery.lookup(infohash);
+    }
 
-    _downloadMetadata(peer, infohash) {
+    _downloadMetadataFromTracker(infohash) {
+
+        parseTorrent.remote(this.torcacheURL + infohash + ".torrent", function (err, parsedTorrent) {
+            if (err || typeof parsedTorrent === "undefined") {
+
+                   //start getting metadata  from DHT
+                this._downloadMetadataFromDHT(infohash);
+            } else {
+                if (this.semaphore != 0) {
+                    this._unregister();
+                    var torrent = utils.parseMetadataTracker(parsedTorrent)
+                    this.emit('metadata', torrent);
+                    console.log("FRom tracker")//TODO:Delete this
+                }
+            }
+        }.bind(this))
+    }
+
+    _downloadMetadataFromDHTPeer(peer, infohash) {
         var socket = new net.Socket();
 
         socket.on('error', err => { socket.destroy(); });
@@ -101,7 +117,7 @@ class MetadataResolver extends EventEmitter {
                 wire.ut_metadata.on('metadata', function (rawMetadata) {
                     if (this.semaphore != 0) {
                         this._unregister();
-
+                        console.log("FRom dHT")//TODO:Delete this
                         var torrent = utils.parseMetadataDHT(rawMetadata, this.currentInfohash);
                         this.emit('metadata', torrent)
                     }

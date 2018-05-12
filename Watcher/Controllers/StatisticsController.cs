@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Watcher.Models;
 using Watcher.Models.Statistics;
 using WatcherDataLayer;
+using WatcherDataLayer.Models;
 
 namespace Watcher.Controllers
 {
@@ -22,6 +23,7 @@ namespace Watcher.Controllers
             long torrentNrWithDesc = _databaseService.GetTorrentsTotalNumber();
             long torrentNrTotal = _databaseService.GetIPTotalNumber();
             long torrentNrWithPeerListOnly = _databaseService.GetTorrentsWithIPList();
+
 
 
             StatisticsModel model = new StatisticsModel(categories, torrentNrWithDesc, torrentNrTotal, torrentNrWithPeerListOnly);

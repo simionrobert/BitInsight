@@ -35,7 +35,6 @@ class ElasticSearch {
             Type: torrent.type,
             Categories: torrent.categories,
             Files: [],
-            Peers: torrent.Peers,
             Size:0,
             Date: Date.now()
         };
@@ -57,7 +56,7 @@ class ElasticSearch {
         this.recordTorrentQueue.push(jsonObject);
         this._queue();
     }
-
+    //TODO: Update IP structure
     indexIP(torrent) {
         var update = {
             update: {
