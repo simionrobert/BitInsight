@@ -94,3 +94,33 @@
         </div>
     </div>
 </div>
+
+<h3 class="search-title">Top Countries</h3>
+<div class="table-responsive">
+    <table class="table table-condensed">
+        <caption>Rank</caption>
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th>Country</th>
+                <th># of peers</th>
+                <th>Region</th>
+                <th>Domain</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                if (Model != null)
+                {
+                    foreach (KeyValuePair<String, String> kvp in Model.GetCategoryIPDistribution())
+                    {
+                        <tr>
+                            <td class="">@kvp.Key</td>
+                            <td class="text-right">@kvp.Value</td>
+                        </tr>
+                    }
+                }
+            }
+        </tbody>
+    </table>
+</div>

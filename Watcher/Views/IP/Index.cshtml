@@ -1,0 +1,60 @@
+﻿@model WatcherDataLayer.Models.SetIPs.IPModel
+
+@{
+    ViewData["Title"] = "IP Detail";
+}
+
+
+<h3 class="search-title">IP Details @Model.IP</h3>
+<div id="assets">
+
+    <div id="assetsTable">
+        <table class="table table-condensed table-responsive">
+            <tr>
+                <th class="col-md-1">Address:</th>
+                <td>@Model.IP</td>
+            </tr>
+            <tr>
+                <th class="col-md-1">Port:</th>
+                <td>@Model.port</td>
+            </tr>
+            <tr>
+                <th class="col-md-1">Coordinates:</th>
+                <td>Lat: <inline id="lat">@Model.geoip.location.lat</inline>  Long: <inline id="lon">@Model.geoip.location.lon</inline></td>
+            </tr>
+            <tr>
+                <th class="col-md-1">Continent:</th>
+                <td>@Model.geoip.continent_name</td>
+            </tr>
+            <tr>
+                <th class="col-md-1">Country:</th>
+                <td>@Model.geoip.country_iso_code</td>
+            </tr>
+            <tr>
+                <th class="col-md-1">Region:</th>
+                <td>@Model.geoip.region_name</td>
+            </tr>
+            <tr>
+                <th class="col-md-1">City:</th>
+                <td>@Model.geoip.city_name</td>
+            </tr>
+        </table>
+    </div>
+
+    <h3>Torrents downloaded</h3>
+    <div id="jsGrid"></div>
+
+    <h3>Map Location</h3>
+    <div id="map"></div>
+
+</div>
+
+
+@section Scripts {
+    <script src="~/js/ip.js"></script>
+    <script defer
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBY2ft6oRya-K1j0Bcp-ex2vEWbR7fMSPo&callback=initMap">
+    </script>
+}
+
+

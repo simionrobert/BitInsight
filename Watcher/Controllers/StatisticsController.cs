@@ -20,12 +20,12 @@ namespace Watcher.Controllers
         public IActionResult Index()
         {
             Dictionary<String, long> categories = _databaseService.GetTorrentPeerCountByCategory();
-            long torrentNrWithDesc = _databaseService.GetTorrentsTotalNumber();
-            long torrentNrTotal = _databaseService.GetIPTotalNumber();
-            long torrentNrWithPeerListOnly = _databaseService.GetTorrentsWithIPList();
+            long torrentNrWithDesc = _databaseService.GetTorrentsNumberWithDesc();
+            long torrentNrTotal = _databaseService.GetTorrentsTotalNumber();
+            long torrentNrWithPeerListOnly = _databaseService.GetTorrentsNumberWithIP();
 
 
-
+            _databaseService.GetTopCities();
             StatisticsModel model = new StatisticsModel(categories, torrentNrWithDesc, torrentNrTotal, torrentNrWithPeerListOnly);
             return View(model);
         }

@@ -150,6 +150,8 @@ class Categorizer {
             torrent.categories.push('Game');
         } else if (file.name.toLowerCase().indexOf('postmortem') > -1) {
             torrent.categories.push('Game');
+        } else if (file.name.toLowerCase().indexOf('steam') > -1) {
+            torrent.categories.push('Game');
         }
     }
 }

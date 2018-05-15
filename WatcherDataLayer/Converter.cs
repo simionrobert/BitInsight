@@ -26,9 +26,15 @@ namespace WatcherDataLayer
             IEnumerable<SetIPs> ips = response.Hits.Select(hit =>
             {
                 var result = hit.Source;
-                result.ID = hit.Id;
                 return result;
             });
+
+            return ips;
+        }
+
+        public static SetIPs ConvertToIP(IGetResponse<SetIPs> response)
+        {
+            SetIPs ips = response.Source;
 
             return ips;
         }

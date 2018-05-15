@@ -19,9 +19,9 @@ namespace Watcher.Controllers
 
         public IActionResult Index(String q)
         {
-            if (Utils.ValidateIPv4(q)) //TODO: Modify here IP page
-                ViewBag.QuerryTitle = "All torrents downloaded/uploaded by "+q;
-            else if(q!=null)
+            if (Utils.ValidateIPv4(q))
+                return RedirectToAction("Index", "IP",new { q = q });
+            else if (q != null)
                 ViewBag.QuerryTitle = "Search result for " + q;
             else
                 ViewBag.QuerryTitle = "Search result...";
@@ -48,7 +48,7 @@ namespace Watcher.Controllers
             // first level querry
             if (q == null)
                 torrents = _databaseService.GetTorrents(startIndex, pageSize, sortField, sortOrder);
-            else if (Utils.ValidateIPv4(q)) //TODO: Searching IPs gives IP description not torrents
+            else if (Utils.ValidateIPv4(q))
                 torrents = _databaseService.GetTorrentsByIP(q, startIndex, pageSize, sortField, sortOrder);
             else
                 torrents = _databaseService.SearchTorrentsByName(q, startIndex, pageSize, sortField, sortOrder); //Search by name
@@ -58,7 +58,7 @@ namespace Watcher.Controllers
 
             return Json(new {
                 data = models,
-                itemsCount = models.Count()
+                itemsCount = models.Count() == pageSize ? _databaseService.GetTorrentsNumberWithDesc() : models.Count()
             });
         }
 
@@ -72,10 +72,11 @@ namespace Watcher.Controllers
             IEnumerable<Torrent> torrents = _databaseService.GetTorrents(startIndex, pageSize, "date", "desc");
 
             IEnumerable<TorrentIndexListingModel> models = ModeliseSearch(torrents);
+
             return Json(new
             {
                 data = models,
-                itemsCount = models.Count()
+                itemsCount = models.Count() == pageSize ? _databaseService.GetTorrentsNumberWithDesc() : models.Count()
             });
         }
 
@@ -87,7 +88,7 @@ namespace Watcher.Controllers
             return Json(new
             {
                 data = models,
-                itemsCount = models.Count()
+                itemsCount = _databaseService.GetTorrentsNumberWithDesc()
             });
         }
 
@@ -106,7 +107,7 @@ namespace Watcher.Controllers
             return Json(new
             {
                 data = models,
-                itemsCount = models.Count()
+                itemsCount = models.Count() == pageSize ?_databaseService.GetTorrentsNumberWithDesc():models.Count()
             });
         }
 

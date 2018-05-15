@@ -34,7 +34,7 @@ namespace WatcherDataLayer
         {
             var searchResponse = _client.Get<Torrent>(id, idx => idx.Index("torrent").Type("doc"));
 
-            var torrent = searchResponse.Source;
+            Torrent torrent = searchResponse.Source;
             torrent.ID = searchResponse.Id;
 
             return torrent;
@@ -53,15 +53,7 @@ namespace WatcherDataLayer
             return SearchTorrents("Categories.keyword", type, startIndex, size, sortField, sortOrder);
         }
 
-        public long GetTorrentsTotalNumber()
-        {
-            //TODO: Test 
-            var result = _client.Count<Torrent>(c => c
-                .Index("torrent")
-                .Type("doc")
-            );
-            return result.Count;
-        }
+
 
 
         private IEnumerable<Torrent> SearchTorrents(String field, String value, int startIndex, int size, String sortField, String sortOrder)
@@ -83,8 +75,11 @@ namespace WatcherDataLayer
                     },
                     Query = new TermQuery
                     {
-                        Field = "Search",
+                        Field = field,
                         Value = value
+                    } && new ExistsQuery
+                    {
+                        Field = "Name"
                     }
                 };
             }
@@ -96,8 +91,11 @@ namespace WatcherDataLayer
                     Size = size,
                     Query = new TermQuery
                     {
-                        Field = "Search",
+                        Field = field,
                         Value = value
+                    } && new ExistsQuery
+                    {
+                        Field = "Name"
                     }
                 };
             }
@@ -117,7 +115,10 @@ namespace WatcherDataLayer
                     {
                         new SortField { Field = sortField, Order =  sortOrder.CompareTo("asc") == 0 ? SortOrder.Ascending : SortOrder.Descending }
                     },
-                Query = new MatchAllQuery()
+                Query = new MatchAllQuery() && new ExistsQuery
+                {
+                    Field = "Name"
+                }
             };
 
 
@@ -126,81 +127,47 @@ namespace WatcherDataLayer
             return Converter.ConvertToTorrent(searchResponse);
         }
 
-
-
-        /// <summary>
-        /// ///////////////////////////////////////////////////////////////////////////////////////
-        /// </summary>
-        /// <returns></returns>
-        public IEnumerable<SetIPs> GetAllIPs()
+        public SetIPs.IPModel GetIP(String ip)
         {
-            var searchResponse = _client.Search<SetIPs>(s => s
-                .Index("ip")
-                .Type("doc")
-                 .Query(q => q
-                     .MatchAll()
-                 )
-             );
-
-            return Converter.ConvertToIP(searchResponse); ;
-        }
-
-
-        public long GetIPTotalNumber()
-        {
-            //TODO: Test 
-            var result = _client.Count<SetIPs>(c => c
-                .Index("ip")
-                .Type("doc")
-            );
-            return result.Count;
-        }
-
-        public long GetTorrentsWithIPList()
-        {
-            //TODO: Test 
-            var result = _client.Search<SetIPs>(c => c
-                .Index("ip")
-                .Type("doc")
-                .Source(false)
-                .Query(q => q
-                    .Exists( d=> d
-                        .Name("named_query")
-                        .Field(p => p.IPs)
-                    )
-                 )
-            );
-
-            SearchRequest<SetIPs> searchRequest = new SearchRequest<SetIPs>("ip", "doc")
+            SearchRequest<SetIPs> searchRequestIP = new SearchRequest<SetIPs>("ip", "doc")
             {
-
                 Source = false,
-                Query = new ExistsQuery()
+                Query = new NestedQuery
                 {
                     Name = "named_query",
-                    Field = "IPs"
+                    Path = "IPs",
+                    Query = new TermQuery
+                    {
+                        Field = "IPs.IP",
+                        Value = ip
+                    },
+                    InnerHits = new InnerHits()
+                    {
+                        Name="InnerHit"
+                    }
                 }
             };
 
+            var searchResponseIP = _client.Search<SetIPs>(searchRequestIP);
 
-            var searchResponse = _client.Search<SetIPs>(searchRequest);
 
-            return searchResponse.Total;
+            foreach (var hit in searchResponseIP.Hits)
+            {
+                var earlHits = hit.InnerHits["InnerHit"].Hits;
+                foreach (var earlHit in earlHits.Hits)
+                {
+                    SetIPs.IPModel earl = earlHit.Source.As<SetIPs.IPModel>();
+                    return earl;
+                }
+            }
+            return null;
         }
 
-
-        public SetIPs  GetIPsByTorrent(String id)
+        public SetIPs GetIPsByTorrent(String id)
         {
             var searchResponse = _client.Get<SetIPs>(id, idx => idx.Index("ip").Type("doc"));
 
-            SetIPs ips = new SetIPs()
-            {
-                IPs = searchResponse.Source.IPs,
-                ID = searchResponse.Id,
-                Date=searchResponse.Source.Date
-            };
-
-            return ips;
+            return Converter.ConvertToIP(searchResponse);
         }
 
         public IEnumerable<Torrent> GetTorrentsByIP(String ip, int startIndex, int size, String sortField, String sortOrder)
@@ -210,10 +177,15 @@ namespace WatcherDataLayer
             SearchRequest<SetIPs> searchRequestIP = new SearchRequest<SetIPs>("ip", "doc")
             {
                 Source = false,
-                Query = new TermQuery
+                Query = new NestedQuery
                 {
-                    Field = "IPs",
-                    Value = ip
+                    Name = "named_query",
+                    Path = "IPs",
+                    Query = new TermQuery
+                    {
+                        Field = "IPs.IP",
+                        Value = ip
+                    }
                 }
             };
 
@@ -247,6 +219,9 @@ namespace WatcherDataLayer
                     {
                         Field = "_id",
                         Terms = stringsID
+                    } && new ExistsQuery
+                    {
+                        Field = "Name"
                     }
                 };
             }
@@ -260,6 +235,9 @@ namespace WatcherDataLayer
                     {
                         Field = "_id",
                         Terms = stringsID
+                    } && new ExistsQuery
+                    {
+                        Field = "Name"
                     }
                 };
             }
@@ -269,6 +247,39 @@ namespace WatcherDataLayer
             return Converter.ConvertToTorrent(searchResponse);
         }
 
+
+        public long GetTorrentsNumberWithDesc()
+        {
+            var searchRequest = new CountRequest<Torrent>("torrent", "doc")
+            {
+                Query = new ExistsQuery
+                {
+                    Field = "Name"
+                }
+            };
+
+            var searchResponse = _client.Count<Torrent>(searchRequest);
+            return searchResponse.Count;
+        }
+
+        public long GetTorrentsTotalNumber()
+        {
+            var result = _client.Count<Torrent>(c => c
+                .Index("torrent")
+                .Type("doc")
+            );
+            return result.Count;
+        }
+
+        public long GetTorrentsNumberWithIP()
+        {
+            var result = _client.Count<SetIPs>(c => c
+                .Index("ip")
+                .Type("doc")
+            );
+            return result.Count;
+        }
+
         public Dictionary<String, long> GetIPTorrentDistribution()
         {
             Dictionary<String, long> categories = new Dictionary<string, long>();
@@ -276,22 +287,16 @@ namespace WatcherDataLayer
             var request = new SearchRequest("ip", "doc")
             {
                 Source = false,
-                Sort = new List<ISort>
+
+                Aggregations= new NestedAggregation("my_terms_agg")
                 {
-                    new SortField { Field = "IPs.keyword", Order = SortOrder.Ascending }
-                },
-                Aggregations = new Dictionary<string, IAggregationContainer>
-                {
-                    { "my_terms_agg", new AggregationContainer
-                        {
-                            Terms = new TermsAggregation("state")
-                            {
-                                Size = 2147483647,
-                                Field = "IPs.keyword",
-                                Order = new List<TermsOrder>{
-                                    TermsOrder.KeyAscending
-                                }
-                            }
+                    Path = "IPs",
+                    Aggregations = new TermsAggregation("state")
+                    {
+                        Size = 2147483647,
+                        Field = "IPs.IP",
+                        Order = new List<TermsOrder>{
+                            TermsOrder.KeyAscending
                         }
                     }
                 }
@@ -299,7 +304,7 @@ namespace WatcherDataLayer
 
             var result = _client.Search<SetIPs>(request);
 
-            var aggs = result.Aggregations.Terms("my_terms_agg");
+            var aggs = result.Aggregations.Nested("my_terms_agg").Terms("state");
             foreach (var bucket in aggs.Buckets)
             {
                 categories.Add(bucket.Key, bucket.DocCount.Value);
@@ -310,8 +315,9 @@ namespace WatcherDataLayer
             IEnumerable<KeyValuePair<String,long>> x = categories.Where(r => r.Value > avg);
             Dictionary<String, long> simplifiedCategory = x.ToDictionary(aa => aa.Key, a => a.Value);
 
-            return simplifiedCategory;
+            return categories;
         }
+
 
         public Dictionary<String, long> GetTorrentPeerCountByCategory()
         {
@@ -381,6 +387,71 @@ namespace WatcherDataLayer
             }
 
             return categories;
+        }
+
+        //TODO:  Here
+        public SetIPs.IPModel GetTopCities()
+        {
+            SearchRequest<SetIPs> searchRequestIP = new SearchRequest<SetIPs>("ip", "doc")
+            {
+                Source = false,
+                Aggregations = new NestedAggregation("agg")
+                {
+                    Path = "IPs",
+                    Aggregations = new NestedAggregation("tags")
+                    {
+                        Path = "IPs.geoip",
+                        Aggregations = new TermsAggregation("tag_names")
+                        {
+                            Field = "IPs.geoip.continent_name.keyword"
+                        }
+                    }
+                }
+            };
+
+            
+                SearchRequest<SetIPs> searchRequestIs = new SearchRequest<SetIPs>("ip", "doc")
+                {
+                    Source = false,
+                    Aggregations = new NestedAggregation("agg")
+                    {
+                        Path = "IPs",
+                        Aggregations = new NestedAggregation("tags")
+                        {
+                            Path = "geoip",
+                            Aggregations = new TermsAggregation("tag_names")
+                            {
+                                Field = "city_name.keyword"
+                            }
+                        }
+                    }
+                };
+
+                var searchResponseIP = _client.Search<SetIPs>(searchRequestIP);
+
+
+            foreach (var hit in searchResponseIP.Hits)
+            {
+                var earlHits = hit.InnerHits["InnerHit"].Hits;
+                foreach (var earlHit in earlHits.Hits)
+                {
+                    SetIPs.IPModel earl = earlHit.Source.As<SetIPs.IPModel>();
+                    return earl;
+                }
+            }
+            return null;
+        }
+        public void GetTopCountries()
+        {
+
+        }
+        public void GetTopContinents()
+        {
+
+        }
+        public void GetTopCities(String country)
+        {
+
         }
     }
 }

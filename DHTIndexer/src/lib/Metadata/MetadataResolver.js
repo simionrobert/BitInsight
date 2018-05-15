@@ -40,14 +40,13 @@ class MetadataResolver extends EventEmitter {
         this.peerDiscovery = peerDiscovery;
         this.semaphore = 1
 
- 
+        this._setMetadataTimeout(this.timeout);
+
+        //conccurently set each other
         if (this.tracker == true) {
             this._downloadMetadataFromTracker(infohash)//try through torcache first(its faster)
         }
-        else {
-            this._downloadMetadataFromDHT(infohash); //try through DHT first
-        }
-
+        this._downloadMetadataFromDHT(infohash); //try through DHT 
     }
 
 
@@ -59,6 +58,7 @@ class MetadataResolver extends EventEmitter {
         this.socketList.forEach(function (socket) {
             socket.destroy();
         })
+        delete this.socketList
         this.socketList = []
     }
 
@@ -70,24 +70,19 @@ class MetadataResolver extends EventEmitter {
     }
 
     _downloadMetadataFromDHT(infohash) {
-        this._setMetadataTimeout(this.timeout);
         this.peerDiscovery.on('peer', this._onDHTPeer.bind(this));
         this.peerDiscovery.lookup(infohash);
     }
 
     _downloadMetadataFromTracker(infohash) {
-
         parseTorrent.remote(this.torcacheURL + infohash + ".torrent", function (err, parsedTorrent) {
             if (err || typeof parsedTorrent === "undefined") {
 
-                   //start getting metadata  from DHT
-                this._downloadMetadataFromDHT(infohash);
             } else {
-                if (this.semaphore != 0) {
+                if (this.semaphore!=0 && parsedTorrent.infoHash == this.currentInfohash) {
                     this._unregister();
                     var torrent = utils.parseMetadataTracker(parsedTorrent)
                     this.emit('metadata', torrent);
-                    console.log("FRom tracker")//TODO:Delete this
                 }
             }
         }.bind(this))
@@ -95,7 +90,6 @@ class MetadataResolver extends EventEmitter {
 
     _downloadMetadataFromDHTPeer(peer, infohash) {
         var socket = new net.Socket();
-
         socket.on('error', err => { socket.destroy(); });
         socket.on('timeout', err => { socket.destroy(); });
 
@@ -117,7 +111,6 @@ class MetadataResolver extends EventEmitter {
                 wire.ut_metadata.on('metadata', function (rawMetadata) {
                     if (this.semaphore != 0) {
                         this._unregister();
-                        console.log("FRom dHT")//TODO:Delete this
                         var torrent = utils.parseMetadataDHT(rawMetadata, this.currentInfohash);
                         this.emit('metadata', torrent)
                     }

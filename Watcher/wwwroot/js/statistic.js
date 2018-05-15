@@ -94,7 +94,6 @@ function drawLine(c, chartData, display) {
     var container = c.parent();
     var $container = $(container);
     c.attr('width', $container.width()); //max width
-    c.attr('height', $container.height()); //max height     
 
     new Chart(ctx, {
         type: 'line',
@@ -115,14 +114,14 @@ function drawLine(c, chartData, display) {
             },
             scales: {
                 xAxes: [{
-                    display: false,
+                    display: true,
                     scaleLabel: {
                         display: true,
                         labelString: 'IP-uri'
                     },
                     ticks: {
                         autoSkip: true,
-                        maxTicksLimit: 1
+                        maxTicksLimit: 0
                     }
                 }],
                 yAxes: [{
@@ -130,9 +129,6 @@ function drawLine(c, chartData, display) {
                     scaleLabel: {
                         display: true,
                         labelString: 'Torrente'
-                    },
-                    ticks: {
-                        stepSize: 1
                     }
                 }]
             },

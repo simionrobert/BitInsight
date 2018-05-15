@@ -5,42 +5,37 @@
         port: 6881,
         tableMaxSize: 128,
         dhtAnnouncing: 1000,
-        BEP51Mode: false,
+        BEP51Mode: true,
         verticalAttackMode: false,
         verticalAttackNrNodes: 8,
         BOOTSTRAP_NODES : [
             ['router.bittorrent.com', 6881],
+            ['router.utorrent.com',6881],
             ['dht.transmissionbt.com', 6881]
         ]
     },
 
     DEFAULT_PEER_DISCOVERY_OPTIONS : {
         port: 6880,
-        timeout: 10 * 1000, //for rapid crawling put 2
-        timeout_initial: 2*1000,
+        timeout: 7 * 1000, //for rapid crawling put 2
+        timeout_initial: 6*1000,
         dht: false
     },
 
     DEFAULT_METADATA_FETCHER_OPTIONS: {
-        timeout: 6*1000, 
-        socketTimeout: 5000,
+        timeout: 9*1000, 
+        socketTimeout: 4000,
         tracker: true,
         torcacheURL: "http://itorrents.org/torrent/"
     },
     
     DEFAULT_ELASTIC_SEARCH_OPTIONS: {
         connection: {
-            host: 'localhost:9200',
-            log: 'trace'
+            host: 'localhost:9200'
         },
         batchSizeDHT: 100,
         batchSizeTorrent:10
     },
-
-    DEFAULT_BTCLIENT_OPTIONS: {
-        metadataFlag: 1,
-        ipFlag:1
-    }
 };
 
 module.exports = config;

@@ -42,8 +42,9 @@ namespace Watcher.Controllers
                 NrFiles = result.Files.Count(),
                 IPs = new IPIndexListingModel()
                 {
-                    ID = ips.ID,
-                    IPs = ips.IPs,
+                    IPs = ips.IPs.Select(x=> {
+                        return x.IP;
+                    }),
                     Date = FormatterUtil.FormatDate(ips.Date)
                 },
                 PeerNumber = result.Peers

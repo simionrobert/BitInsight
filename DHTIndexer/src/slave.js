@@ -7,7 +7,6 @@ const config = require('../config');
 const ElasticSearch = require('./lib/Database/Elasticsearch');
 const MetadataService = require('./lib/Metadata/MetadataService');
 const PeerDiscoveryService = require('./lib/Metadata/PeerDiscoveryService');
-const batchSize = 10;
 
 var indexer = new ElasticSearch(config.DEFAULT_ELASTIC_SEARCH_OPTIONS);
 var metadataService = new MetadataService(config);
@@ -15,7 +14,12 @@ var peerDiscoveryService = new PeerDiscoveryService(config);
 
 var lastInfohashIdMetadata = parseInt(fs.readFileSync('resource/lastInfohashIdMetadata.txt'), 10);
 var lastInfohashIdIPs = parseInt(fs.readFileSync('resource/lastInfohashIdIPs.txt'), 10);
-
+if (isNaN(lastInfohashIdMetadata)) {
+    lastInfohashIdMetadata = 0;
+}
+if (isNaN(lastInfohashIdIPs)) {
+    lastInfohashIdIPs = 0;
+}
 
 
 peerDiscoveryService.on('ip', function (torrent) {
@@ -26,6 +30,7 @@ peerDiscoveryService.on('ip', function (torrent) {
 
     setImmediate((torrent) => {
         indexer.indexIP(torrent)
+        indexer.updateSizeTorrent(torrent) //Update Peers Nr on each torrent
     }, torrent);
 });
 
@@ -34,7 +39,7 @@ peerDiscoveryService.on('cacheEmpty', function () {
     //periodically save to keep log of where i remained and to continue from
     fs.writeFile('resource/lastInfohashIdIPs.txt', lastInfohashIdIPs);
 
-    indexer.getLastInfohashes(lastInfohashIdIPs + 1, lastInfohashIdIPs + batchSize, function (listInfohashes) {
+    indexer.getLastInfohashes(lastInfohashIdIPs + 1, lastInfohashIdIPs + 10, function (listInfohashes) {
         if (listInfohashes.length != 0) {
             peerDiscoveryService.addToCache(listInfohashes);
             peerDiscoveryService.startService()
@@ -43,16 +48,17 @@ peerDiscoveryService.on('cacheEmpty', function () {
 })
 
 
-
 metadataService.on('metadata', function (torrent) {
     lastInfohashIdMetadata++;
 
-    console.log('\n' + lastInfohashIdMetadata + ". Infohash: " + torrent.infohash.toString('hex'));
+    console.log('\n' + lastInfohashIdMetadata + ". Infohash: " + torrent.infohash.toString('hex'))
     console.log('Torrent sent to batch: ' + torrent.name);
-
+    
      setImmediate((metadata) => {
             indexer.indexTorrent(metadata)
-      }, torrent);
+    }, torrent);
+
+    console.log('/////////////////////////////////////////////////////');
 });
 
 metadataService.on('metadataTimeout', function (infohash) {
@@ -60,14 +66,17 @@ metadataService.on('metadataTimeout', function (infohash) {
 
     console.log('\n' + lastInfohashIdMetadata + ". Infohash: " + infohash.toString('hex'));
     console.log('No metadata available');
+    console.log('/////////////////////////////////////////////////////');
 })
 
 metadataService.on('cacheEmpty', function () {
 
+    console.log('Cache Empty');
+
     //periodically save to keep log of where i remained and to continue from
     fs.writeFile('resource/lastInfohashIdMetadata.txt', lastInfohashIdMetadata);
 
-    indexer.getLastInfohashes(lastInfohashIdMetadata + 1, lastInfohashIdMetadata + batchSize, function (listInfohashes) {
+    indexer.getLastInfohashes(lastInfohashIdMetadata + 1, lastInfohashIdMetadata + 10, function (listInfohashes) {
         if (listInfohashes.length != 0) {
             metadataService.addToCache(listInfohashes);
             metadataService.startService()
@@ -76,5 +85,5 @@ metadataService.on('cacheEmpty', function () {
 })
 
 
-metadataService.startService()
-//peerDiscoveryService.startService()
+//metadataService.startService()
+peerDiscoveryService.startService()

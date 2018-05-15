@@ -39,7 +39,7 @@ $(document).ready(function () {
                 },
 
                 fields: [
-                    { name: "type", title: "Type", width: 10},
+                    { name: "type", title: "Type", width: 15 },
                     {
                         name: "name", title: "Name",
                         itemTemplate: function (value, item) {
@@ -55,9 +55,9 @@ $(document).ready(function () {
                             return $("<div>").append($title).append($subtitle);
                         }
                     },
-                    {name: "date", title: "Added", type: "date",width: 20},
-                    { name: "size", title: "Size", type: "text", width: 10 },
-                    { name: "peerNumber", title: "Peers", type: "number", width: 5 }
+                    { name: "date", title: "Added", type: "date", width: 30 },
+                    { name: "size", title: "Size", type: "text", width: 25 },
+                    { name: "peerNumber", title: "Peers", type: "number", width: 10 }
                 ]
             });
             break;
@@ -87,20 +87,23 @@ $(document).ready(function () {
                 },
 
                 fields: [
-                    { name: "type", title: "Type", width: 30 },
+                    { name: "type", title: "Type", width: 15 },
                     {
                         name: "name", title: "Name",
                         itemTemplate: function (value, item) {
                             var $title = $("<a>").attr("href", "/Detail/Index/" + item.id).text(value);
 
+                            //subtitle
                             var $icon = $("<span>").attr("class", "glyphicon glyphicon-magnet");
                             var $subText = $("<a>").attr("href", item.magnetLink).addClass("noborder").append($icon).append(" ");
+
                             var $subtitle = $("<p>").addClass("subtitle").append($subText).append($("<small>").append(item.categories));
+
 
                             return $("<div>").append($title).append($subtitle);
                         }
                     },
-                    { name: "date", title: "Added", type: "date", width: 50 },
+                    { name: "date", title: "Added", type: "date", width: 30 },
                     { name: "size", title: "Size", type: "text", width: 25 },
                     { name: "peerNumber", title: "Peers", type: "number", width: 10 }
                 ]
@@ -137,7 +140,7 @@ $(document).ready(function () {
                 },
 
                 fields: [
-                    { name: "type", title: "Type", width: 30 },
+                    { name: "type", title: "Type", width: 15 },
                     {
                         name: "name", title: "Name",
                         itemTemplate: function (value, item) {
@@ -153,7 +156,7 @@ $(document).ready(function () {
                             return $("<div>").append($title).append($subtitle);
                         }
                     },
-                    { name: "date", title: "Added", type: "date", width: 50 },
+                    { name: "date", title: "Added", type: "date", width: 30},
                     { name: "size", title: "Size", type: "text", width: 25 },
                     { name: "peerNumber", title: "Peers", type: "number", width: 10 }
                 ]
@@ -205,9 +208,8 @@ $(document).ready(function () {
                     return data.promise();
                 }
             },
-
             fields: [
-                { name: "type", title: "Type", width: 10 },
+                { name: "type", title: "Type", width: 15 },
                 {
                     name: "name", title: "Name",
                     itemTemplate: function (value, item) {
@@ -223,9 +225,9 @@ $(document).ready(function () {
                         return $("<div>").append($title).append($subtitle);
                     }
                 },
-                { name: "date", title: "Added", type: "date", width: 20 },
-                { name: "size", title: "Size", type: "text", width: 10 },
-                { name: "peerNumber", title: "Peers", type: "number", width: 5 }
+                { name: "date", title: "Added", type: "date", width: 30 },
+                { name: "size", title: "Size", type: "text", width: 25 },
+                { name: "peerNumber", title: "Peers", type: "number", width: 10 }
             ]
         });
     }

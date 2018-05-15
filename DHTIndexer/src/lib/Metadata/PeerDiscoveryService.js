@@ -4,6 +4,7 @@ const EventEmitter = require('events')
 const _ = require('lodash');
 const PeerDiscovery = require('./PeerDiscovery');
 
+
 class PeerDiscoveryService extends EventEmitter {
     constructor(opts) {
         super();
@@ -21,8 +22,11 @@ class PeerDiscoveryService extends EventEmitter {
         this.onDiscoveryEnded = function (infohash) {
             var torrent = {};
             torrent.infohash = infohash;
-            torrent.listIP = _.uniq(this.listIP)
+            torrent.listIP = _.uniqBy(this.listIP, function (e) {
+                return e.host + e.port
+            })
 
+            
             this.peerDiscovery.removeListener('peer', this.onPeer);
             this.peerDiscovery.removeListener('timeout', this.onDiscoveryEnded);
             this.peerDiscovery.destroy();
@@ -46,6 +50,7 @@ class PeerDiscoveryService extends EventEmitter {
         //TODO:Use DHT not PeerDiscovery
         if (this.cache.length != 0) {
             var infohash = this.cache.shift();
+            delete this.listIP;
             this.listIP = [];
 
             //create new PeerDiscovery for each infohash
@@ -56,7 +61,7 @@ class PeerDiscoveryService extends EventEmitter {
             //start getting metadata
             this.peerDiscovery.lookup(infohash);
         } else {
-            this.listIP = [];
+            delete this.listIP;
             this.emit("cacheEmpty");
         }
     }
