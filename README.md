@@ -1,5 +1,8 @@
 # Torrent-Indexer
-BitTorrent Nodejs indexer which leverages the DHT protocol for crawling infohashes, metadata and IPs
+BitTorrent Nodejs indexer which leverages the DHT protocol for crawling infohashes, torrent metadata and IPs.
+
+The underling database is interfaced through [BitInsight-WebInterface](https://github.com/simionrobert/BitInsight-WebInterface.git),
+a statistical analyser and data visualisation tool.
 
 This repo contains the following modules:
 
