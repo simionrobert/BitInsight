@@ -38,7 +38,16 @@
                     <li><a asp-area="" asp-controller="Browse" asp-action="Index">Browse torrents</a></li>
                     <li><a asp-area="" asp-controller="Search" asp-action="Recent">Recent torrents</a></li>
                     <li><a asp-area="" asp-controller="Search" asp-action="Top">Top 100</a></li>
-                    <li><a asp-area="" asp-controller="Statistics" asp-action="Index">Statistics</a></li>
+                    <li class="dropdown">
+                        <a class="dropdown-toggle" data-toggle="dropdown" asp-area="" asp-controller="Statistics" asp-action="Index">
+                            Statistics
+                            <span class="caret"></span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a asp-area="" asp-controller="Statistics" asp-action="Index">Crawler statistics</a></li>
+                            <li><a asp-area="" asp-controller="Statistics" asp-action="World">World statistics</a></li>
+                        </ul>
+                    </li>
                 </ul>
             </div>
         </div>

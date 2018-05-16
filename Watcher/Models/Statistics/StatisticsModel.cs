@@ -10,6 +10,10 @@ namespace Watcher.Models.Statistics
         public long torrentNrWithDesc;
         public long torrentNrTotal;
         public long torrentNrWithPeerListOnly;
+        public Dictionary<String, long> rankCities;
+        public Dictionary<String, long> rankCountries;
+        public Dictionary<String, long> rankContinents;
+
 
         private  Dictionary<String, String> IPTorrentDistribution;
         private Dictionary<String, long> categories;
@@ -18,12 +22,18 @@ namespace Watcher.Models.Statistics
                      Dictionary<string, long> categories,
                      long torrentNrWithDesc,
                      long torrentNrTotal,
-                     long torrentNrWithPeerListOnly)
+                     long torrentNrWithPeerListOnly,
+                     Dictionary<String, long> rankCities,
+                     Dictionary<String, long> rankCountries,
+                     Dictionary<String, long> rankContinents)
         {
             this.categories = categories;
             this.torrentNrWithDesc = torrentNrWithDesc;
             this.torrentNrTotal = torrentNrTotal;
             this.torrentNrWithPeerListOnly = torrentNrWithPeerListOnly;
+            this.rankCities = rankCities;
+            this.rankCountries = rankCountries;
+            this.rankContinents = rankContinents;
 
             IPTorrentDistribution = new Dictionary<string, string>();
         }
@@ -46,5 +56,7 @@ namespace Watcher.Models.Statistics
 
             return IPTorrentDistribution;
         }
+
+
     }
 }

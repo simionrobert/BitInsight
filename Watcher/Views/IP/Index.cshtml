@@ -1,4 +1,4 @@
-﻿@model WatcherDataLayer.Models.SetIPs.IPModel
+﻿@model WatcherDataLayer.Models.IPModel
 
 @{
     ViewData["Title"] = "IP Detail";
@@ -11,31 +11,31 @@
     <div id="assetsTable">
         <table class="table table-condensed table-responsive">
             <tr>
-                <th class="col-md-1">Address:</th>
+                <th class="col-md-2">Address:</th>
                 <td>@Model.IP</td>
             </tr>
             <tr>
-                <th class="col-md-1">Port:</th>
-                <td>@Model.port</td>
+                <th class="col-md-2">Port:</th>
+                <td>@Model.Port</td>
             </tr>
             <tr>
-                <th class="col-md-1">Coordinates:</th>
+                <th class="col-md-2">Coordinates:</th>
                 <td>Lat: <inline id="lat">@Model.geoip.location.lat</inline>  Long: <inline id="lon">@Model.geoip.location.lon</inline></td>
             </tr>
             <tr>
-                <th class="col-md-1">Continent:</th>
+                <th class="col-md-2">Continent:</th>
                 <td>@Model.geoip.continent_name</td>
             </tr>
             <tr>
-                <th class="col-md-1">Country:</th>
+                <th class="col-md-2">Country:</th>
                 <td>@Model.geoip.country_iso_code</td>
             </tr>
             <tr>
-                <th class="col-md-1">Region:</th>
+                <th class="col-md-2">Region:</th>
                 <td>@Model.geoip.region_name</td>
             </tr>
             <tr>
-                <th class="col-md-1">City:</th>
+                <th class="col-md-2">City:</th>
                 <td>@Model.geoip.city_name</td>
             </tr>
         </table>

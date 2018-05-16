@@ -18,6 +18,6 @@ namespace Watcher.Models.Search
         public int NrFiles;
         public int PeerNumber;
         public IEnumerable<FileDetailModel> Files { get; set; }
-        public IPIndexListingModel IPs { get; set; }
+        public List<String> IPs { get; set; }
     }
 }

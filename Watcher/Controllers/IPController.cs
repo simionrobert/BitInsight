@@ -19,7 +19,7 @@ namespace Watcher.Controllers
 
         public IActionResult Index(String q)
         {
-            SetIPs.IPModel ips = _databaseService.GetIP(q);
+            IPModel ips = _databaseService.GetIP(q);
 
             return View(ips);
         }

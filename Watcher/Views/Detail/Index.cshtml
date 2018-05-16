@@ -94,7 +94,7 @@
                             @{
                             if (Model != null)
                             {
-                                foreach (var ip in Model.IPs.IPs)
+                                foreach (var ip in Model.IPs)
                                 {
                                     <tr>
                                         <td class=""><a asp-area="" asp-controller="IP" asp-action="Index" asp-route-q="@ip">@ip</a></td>

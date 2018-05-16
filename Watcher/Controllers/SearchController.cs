@@ -19,7 +19,7 @@ namespace Watcher.Controllers
 
         public IActionResult Index(String q)
         {
-            if (Utils.ValidateIPv4(q))
+            if (Utils.ValidateIPv4(ref q))
                 return RedirectToAction("Index", "IP",new { q = q });
             else if (q != null)
                 ViewBag.QuerryTitle = "Search result for " + q;
@@ -48,7 +48,7 @@ namespace Watcher.Controllers
             // first level querry
             if (q == null)
                 torrents = _databaseService.GetTorrents(startIndex, pageSize, sortField, sortOrder);
-            else if (Utils.ValidateIPv4(q))
+            else if (Utils.ValidateIPv4(ref q))
                 torrents = _databaseService.GetTorrentsByIP(q, startIndex, pageSize, sortField, sortOrder);
             else
                 torrents = _databaseService.SearchTorrentsByName(q, startIndex, pageSize, sortField, sortOrder); //Search by name

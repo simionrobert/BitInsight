@@ -67,8 +67,23 @@ class Categorizer {
 
             //default categorise by name if the extension is not recognised
             this.getVideoCategories(file, newTorrent);
+            if (torrent.type != '') {
+                torrent.type = 'Video';
+                return newTorrent;
+            }
+
             this.getMediaCategories(file, newTorrent);
+            if (torrent.type != '') {
+                torrent.type = 'Media';
+                return newTorrent;
+            }
             this.getDocCategories(file, newTorrent);
+            if (torrent.type != '') {
+                torrent.type = 'Doc';
+                return newTorrent;
+            }
+
+            torrent.type = 'Other';
         }
 
 

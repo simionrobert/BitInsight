@@ -24,10 +24,27 @@ namespace Watcher.Controllers
             long torrentNrTotal = _databaseService.GetTorrentsTotalNumber();
             long torrentNrWithPeerListOnly = _databaseService.GetTorrentsNumberWithIP();
 
-
-            _databaseService.GetTopCities();
-            StatisticsModel model = new StatisticsModel(categories, torrentNrWithDesc, torrentNrTotal, torrentNrWithPeerListOnly);
+            StatisticsModel model = new StatisticsModel(categories, torrentNrWithDesc, torrentNrTotal,
+                torrentNrWithPeerListOnly, null,null,null);
             return View(model);
+        }
+
+        public IActionResult World()
+        {
+            Dictionary<String, long> topCity = _databaseService.GetTopCities();
+            Dictionary<String, long> topCountry = _databaseService.GetTopCountries();
+            Dictionary<String, long> topContinents = _databaseService.GetTopContinents();
+
+            StatisticsModel model = new StatisticsModel(null, 0, 0, 0, 
+                topCity, topCountry, topContinents);
+            return View("~/Views/Statistics/World.cshtml", model);
+        }
+
+        public JsonResult GetTopCities(String q)
+        {
+            Dictionary<String, long> topCity = _databaseService.GetTopCities(q);
+
+            return Json(topCity);
         }
 
         public JsonResult GetDownloadedCategoryDistribution()

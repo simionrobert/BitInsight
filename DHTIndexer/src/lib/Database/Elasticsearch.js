@@ -15,12 +15,13 @@ class ElasticSearch {
         this.recordInfohashQueue = [];
         this.recordTorrentQueue = [];
         this.recordIPQueue = [];
+        this.recordRelationQueue = [];
 
         // for dht indexing
         this._getLastID() //is async but it is executed first
     }
 
-    indexTorrent(torrent) {
+    indexTorrent(torrent,callback) {
         var update = {
             update: {
                 _index: 'torrent',
@@ -56,10 +57,80 @@ class ElasticSearch {
 
         this.recordTorrentQueue.push(update);
         this.recordTorrentQueue.push(jsonObject);
-        this._queue();
+        this._queue(callback);
     }
 
-    updateSizeTorrent(torrent) {
+    indexInfohash(infohash, callback) {
+        var index = {
+            index: {
+                _index: 'torrent',
+                _type: 'doc',
+                _id: infohash.toString('hex')
+            }
+        }
+        var jsonObject = {
+            ID: (this._id++),
+            Peers: 0
+        };
+
+        this.recordInfohashQueue.push(index);
+        this.recordInfohashQueue.push(jsonObject);
+        this._queue(callback);
+    }
+   
+    indexIP(torrent,callback) {
+        if (torrent.listIP.length != 0) {
+
+            //update torrent Peers value
+            this._updateSizeTorrent(torrent)
+
+            // Index relation first
+            this._indexRelation(torrent);
+
+            //Index every ip
+            for (let i = 0; i < torrent.listIP.length; i++) {
+                this.recordIPQueue.push({
+                    index: {
+                        _index: 'ip',
+                        _type: 'doc',
+                        _id: torrent.listIP[i].host, //+torrent.listIP[i].port TODO: Discuss IP:port
+                        pipeline: 'geoip'
+                    }
+                });
+                this.recordIPQueue.push({
+                    IP: torrent.listIP[i].host,
+                    Port: torrent.listIP[i].port,
+                    Date: Date.now()
+                });
+            }
+
+            //Verify if it needs to be inserted
+            this._queue(callback);
+        }
+    }
+
+    _indexRelation(torrent) {
+        var index = {
+            index: {
+                _index: 'relation',
+                _type: 'doc',
+                _id: torrent.infohash.toString('hex')
+            }
+        }
+
+        var jsonObject = {
+            IPs: []
+        };
+
+        for (let i = 0; i < torrent.listIP.length; i++) {
+            jsonObject.IPs.push(torrent.listIP[i].host) //+torrent.listIP[i].port TODO: Discuss IP:port
+        }
+
+        this.recordRelationQueue.push(index);
+        this.recordRelationQueue.push(jsonObject);
+    }
+
+    _updateSizeTorrent(torrent) {
         var update = {
             update: {
                 _index: 'torrent',
@@ -77,76 +148,42 @@ class ElasticSearch {
 
         this.recordTorrentQueue.push(update);
         this.recordTorrentQueue.push(jsonObject);
-        this._queue();
-    }
-   
-    indexIP(torrent) {
-        var index = {
-            index: {
-                _index: 'ip',
-                _type: 'doc',
-                _id: torrent.infohash.toString('hex'),
-                pipeline: 'geoip'
-            }
-        }
-
-        var jsonObject = {
-                IPs: [],
-                Date: Date.now()
-        };
-
-        for (let i = 0; i < torrent.listIP.length; i++) {
-            jsonObject.IPs.push(
-                {
-                    IP: torrent.listIP[i].host,
-                    Port: torrent.listIP[i].port
-                })
-        }
-
-        this.recordIPQueue.push(index);
-        this.recordIPQueue.push(jsonObject);
-        this._queue();
     }
 
-    indexInfohash(infohash) {
-        var index = {
-            index: {
-                _index: 'torrent',
-                _type: 'doc',
-                _id: infohash.toString('hex')
-            }
-        }
-        var jsonObject = {
-            ID: (this._id++),
-            Peers:0
-        };
-
-        this.recordInfohashQueue.push(index);
-        this.recordInfohashQueue.push(jsonObject);
-        this._queue();
-    }
-     
-    _queue() {
+    _queue(callback) {
         if (this.recordInfohashQueue.length / 2 >= this.batchSizeDHT) {
             this.client.bulk({
                 body: this.recordInfohashQueue
             }, function (err, resp) {
-                //console.log(resp);
             });
-
             this.recordInfohashQueue = [];
+
+            console.log('Elasticsearch Class: Infohash Indexed')
             return;
         }
 
-        if (this.recordIPQueue.length / 2 >= this.batchSizeTorrent) {
+        if (this.recordRelationQueue.length / 2 >= this.batchSizeTorrent) {
+            this.client.bulk({
+                body: this.recordRelationQueue
+            }, function (err, resp) {
+            });
+            this.recordRelationQueue = [];
+
             this.client.bulk({
                 body: this.recordIPQueue
             }, function (err, resp) {
-                //console.log(resp);
             });
-            this.recordIPQueue = [];
+            this.recordIPQueue =[];
+            console.log('Elasticsearch Class: IP and Relation Indexed')
 
-            console.log('Elasticsearch Class: IP Indexed')
+            this.client.bulk({
+                body: this.recordTorrentQueue
+            }, function (err, resp) {
+            });
+
+            this.recordTorrentQueue = [];
+            console.log('Elasticsearch Class: Peers updated')
+            callback();
             return;
         }
 
@@ -154,11 +191,11 @@ class ElasticSearch {
             this.client.bulk({
                 body: this.recordTorrentQueue
             }, function (err, resp) {
-                //console.log(resp);
             });
 
             this.recordTorrentQueue = [];
             console.log('Elasticsearch Class: Metadata Indexed')
+            callback();
         }
     }
 
@@ -198,9 +235,10 @@ class ElasticSearch {
         return listInfohashes;
     }
 
-     _getLastID() {
+    _getLastID() {
         this.client.search({
             index: 'torrent',
+            _source: false,
             size: 0,
             body: {
                 "aggs": {
@@ -215,10 +253,10 @@ class ElasticSearch {
             if (error != undefined) {
                 console.log("unexpected error from elasticsearch");
                 process.exit(0);
-                }
+            }
 
             this._id = response.aggregations.max_id.value + 1;
-            }.bind(this))
+        }.bind(this))
     }
 
     createTorrentIndex() {
@@ -228,35 +266,26 @@ class ElasticSearch {
                 "mappings": {
                     "doc": {
                         "properties": {
-                            "ID": { "type": "long" },
-                            "Name": {
-                                "type": "text",
-                                "fields": {
-                                    "keyword": {
-                                        "type": "keyword"
-                                    }
-                                }
+                            "ID": {
+                                "type": "long"
                             },
-                            "Search": { "type": "text" },
+                            "Name": {
+                                "type": "text"
+                            },
+                            "Search": {
+                                "type": "text"
+                            },
                             "Type": {
-                                "type": "text",
-                                "fields": {
-                                    "keyword": {
-                                        "type": "keyword"
-                                    }
-                                }
+                                "type": "keyword"
                             },
                             "Categories": {
-                                "type": "text",
-                                "fields": {
-                                    "keyword": {
-                                        "type": "keyword"
-                                    }
-                                }
+                                "type": "keyword"
                             },
                             "Files": {
                                 "properties": {
-                                    "Name": { "type": "text" },
+                                    "Name": {
+                                        "type": "text"
+                                    },
                                     "Size": { "type": "long" }
                                 }
                             },
@@ -284,24 +313,18 @@ class ElasticSearch {
                 "mappings": {
                     "doc": {
                         "properties": {
-                            "IPs": {
-                                "type": "nested",
+                            "IP": { "type": "ip" },
+                            "Port": { "type": "integer" },
+                            "Date": { "type": "date" },
+                            "geoip": {
                                 "properties": {
-                                    "IP": { "type": "ip" },
-                                    "Port": { "type": "integer" },
-                                    "geoip": {
-                                        "type": "nested",
-                                        "properties": {
-                                            "continent_name": { "type": "text" },
-                                            "city_name": { "type": "text" },
-                                            "country_iso_code": { "type": "text" },
-                                            "region_name": { "type": "text" },
-                                            "location": { "type": "geo_point" }
-                                        }
-                                    }
+                                    "continent_name": { "type": "keyword" },
+                                    "city_name": { "type": "keyword" },
+                                    "country_iso_code": { "type": "keyword" },
+                                    "region_name": { "type": "keyword" },
+                                    "location": { "type": "geo_point" }
                                 }
-                            },
-                            "Date": { "type": "date"}
+                            }
                         }
                     }
                 }
@@ -318,29 +341,13 @@ class ElasticSearch {
 
     createRelationIndex() {
         this.client.indices.create({
-            index: "ip",
+            index: "relation",
             body: {
                 "mappings": {
                     "doc": {
                         "properties": {
-                            "IPs": {
-                                "type": "nested",
-                                "properties": {
-                                    "IP": { "type": "ip" },
-                                    "Port": { "type": "integer" },
-                                    "geoip": {
-                                        "type": "nested",
-                                        "properties": {
-                                            "continent_name": { "type": "text" },
-                                            "city_name": { "type": "text" },
-                                            "country_iso_code": { "type": "text" },
-                                            "region_name": { "type": "text" },
-                                            "location": { "type": "geo_point" }
-                                        }
-                                    }
-                                }
-                            },
-                            "Date": { "type": "date" }
+                            "ID": { "type": "long" },
+                            "IPs": { "type": "ip" }
                         }
                     }
                 }

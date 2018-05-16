@@ -4,17 +4,12 @@ using System.Text;
 
 namespace WatcherDataLayer.Models
 {
-    public class SetIPs
+    public class IPModel
     {
-        public IEnumerable<IPModel> IPs{ get; set; }
         public String Date { get; set; }
-
-        public class IPModel
-        {
-            public String IP;
-            public int port;
-            public GeoIP geoip;
-        }
+        public String IP;
+        public int Port;
+        public GeoIP geoip;
 
         public class GeoIP
         {

@@ -7,7 +7,7 @@ namespace Watcher.Controllers
 {
     public static class Utils
     {
-        public static bool ValidateIPv4(string ipString)
+        public static bool ValidateIPv4(ref string ipString)
         {
             if (String.IsNullOrWhiteSpace(ipString))
             {

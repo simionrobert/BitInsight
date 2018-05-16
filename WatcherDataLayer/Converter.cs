@@ -21,9 +21,9 @@ namespace WatcherDataLayer
             return torrents;
         }
 
-        public static IEnumerable<SetIPs> ConvertToIP(ISearchResponse<SetIPs> response)
+        public static IEnumerable<IPModel> ConvertToIP(ISearchResponse<IPModel> response)
         {
-            IEnumerable<SetIPs> ips = response.Hits.Select(hit =>
+            IEnumerable<IPModel> ips = response.Hits.Select(hit =>
             {
                 var result = hit.Source;
                 return result;
@@ -32,9 +32,9 @@ namespace WatcherDataLayer
             return ips;
         }
 
-        public static SetIPs ConvertToIP(IGetResponse<SetIPs> response)
+        public static IPModel ConvertToIP(IGetResponse<IPModel> response)
         {
-            SetIPs ips = response.Source;
+            IPModel ips = response.Source;
 
             return ips;
         }

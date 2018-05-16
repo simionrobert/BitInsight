@@ -11,7 +11,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>bb3ae382-34e5-4b49-bd9a-74d9c07543a7</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>src\slave.js</StartupFile>
+    <StartupFile>src\indexMetadataResolve.js</StartupFile>
     <StartWebBrowser>False</StartWebBrowser>
     <SearchPath>
     </SearchPath>
@@ -31,6 +31,12 @@
     <Compile Include="config.js">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="src\indexMetadataResolve.js">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\indexPeerDiscovery.js">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="src\lib\Metadata\Categoriser.js">
       <SubType>Code</SubType>
     </Compile>
@@ -43,10 +49,7 @@
     <Compile Include="src\lib\Metadata\PeerDiscoveryService.js">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\master.js">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="src\slave.js">
+    <Compile Include="src\indexInfohashes.js">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\test\test.js">

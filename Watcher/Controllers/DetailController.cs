@@ -22,7 +22,7 @@ namespace Watcher.Controllers
         public IActionResult Index(string id)
         {
             Torrent result = _databaseService.GetTorrentByID(id);
-            SetIPs ips = _databaseService.GetIPsByTorrent(result.ID);
+            RelationModel ips = _databaseService.GetIPsByTorrent(result.ID);
 
             TorrentDetailModel model = new TorrentDetailModel
             {
@@ -40,13 +40,7 @@ namespace Watcher.Controllers
                     Size = FormatterUtil.FormatBytes(file.Size)
                 }),
                 NrFiles = result.Files.Count(),
-                IPs = new IPIndexListingModel()
-                {
-                    IPs = ips.IPs.Select(x=> {
-                        return x.IP;
-                    }),
-                    Date = FormatterUtil.FormatDate(ips.Date)
-                },
+                IPs = ips.IPs,
                 PeerNumber = result.Peers
             };
 
