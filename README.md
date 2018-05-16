@@ -1,5 +1,5 @@
 # Torrent-Indexer
-BitTorrent Node.js project for searching torrents and the associated IPs. 
+BitTorrent Nodejs indexer which leverages the DHT protocol for crawling infohashes, metadata and IPs
 
 This repo contains the following modules:
 
@@ -40,7 +40,28 @@ This module uses bittorrent-protocol and ut_metadata for getting torrent metadat
 
 ## Getting Started
 
-**Project Currently in Development**
+```
+# Get the latest snapshot
+git clone https://github.com/simionrobert/BitInsight.git MyLocation
+
+# Change directory
+cd MyLocation
+
+# Install NPM dependencies
+npm install
+
+# First, create elasticsearch database index mappings
+node createESDatabase.js
+
+# 1. Indexing infohases
+node indexInfohases.js
+
+# 2. Download metadata for each infohash from the db
+node indexMetadata.js
+
+# 3. Getting peers IP address for each infohash from the db
+node indexIP.js
+```
 
 **Aditional notes:**
 If you have some issues referring parts of code in the master branch add them in the issues section.
@@ -52,7 +73,7 @@ If you have some issues referring parts of code in the master branch add them in
 * [Real-world sybil attacks in BitTorrent mainline DHT](https://www.researchgate.net/profile/Liang_Wang84/publication/261046350_Real-world_sybil_attacks_in_BitTorrent_mainline_DHT/links/550808160cf27e990e08c7bb/Real-world-sybil-attacks-in-BitTorrent-mainline-DHT.pdf)
 * [Kademlia: A Peer-to-peer Information System Based on the XOR Metric](http://www.ic.unicamp.br/~bit/ensino/mo809_1s13/papers/P2P/Kademlia-%20A%20Peer-to-Peer%20Information%20System%20Based%20on%20the%20XOR%20Metric%20.pdf)
 
-### Thank You
+## Thank You
 I really appreciate all kinds of feedback and contributions.
 
 ## License
