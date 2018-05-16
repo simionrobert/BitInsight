@@ -12,7 +12,7 @@
     <ProjectGuid>bb3ae382-34e5-4b49-bd9a-74d9c07543a7</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>src\indexPeerDiscovery.js</StartupFile>
+    <StartupFile>src\indexPeers.js</StartupFile>
     <StartWebBrowser>False</StartWebBrowser>
     <SearchPath>
     </SearchPath>
@@ -32,10 +32,10 @@
     <Compile Include="config.js">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\indexMetadataResolve.js">
+    <Compile Include="src\indexMetadata.js">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\indexPeerDiscovery.js">
+    <Compile Include="src\indexPeers.js">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\lib\Metadata\Categoriser.js">
@@ -73,7 +73,7 @@
     <Compile Include="src\lib\Metadata\PeerDiscovery.js">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\test\testElasticSearch.js">
+    <Compile Include="src\createESDatabase.js">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\test\testMetadataResolver.js">
