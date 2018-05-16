@@ -60,7 +60,7 @@ node indexInfohases.js
 node indexMetadata.js
 
 # 3. Getting peers IP address for each infohash from the db
-node indexIP.js
+node indexPeers.js
 ```
 
 **Aditional notes:**
