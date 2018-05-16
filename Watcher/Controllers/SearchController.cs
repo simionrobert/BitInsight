@@ -20,7 +20,7 @@ namespace Watcher.Controllers
         public IActionResult Index(String q)
         {
             if (Utils.ValidateIPv4(ref q))
-                return RedirectToAction("Index", "IP",new { q = q });
+                return RedirectToAction("Index", "IP", new { q = q });
             else if (q != null)
                 ViewBag.QuerryTitle = "Search result for " + q;
             else
@@ -42,54 +42,32 @@ namespace Watcher.Controllers
 
         public JsonResult SearchJSON(String q, int pageIndex, int pageSize, String sortField, String sortOrder)
         {
-            IEnumerable<Torrent> torrents = null;
             int startIndex = (pageIndex - 1) * pageSize;
+            IEnumerable<Torrent> torrents = null;
 
-            // first level querry
             if (q == null)
                 torrents = _databaseService.GetTorrents(startIndex, pageSize, sortField, sortOrder);
             else if (Utils.ValidateIPv4(ref q))
-                torrents = _databaseService.GetTorrentsByIP(q, startIndex, pageSize, sortField, sortOrder);
-            else
-                torrents = _databaseService.SearchTorrentsByName(q, startIndex, pageSize, sortField, sortOrder); //Search by name
+                torrents = _databaseService.GetTorrentsOfIP(q, startIndex, pageSize, sortField, sortOrder);
+            else //Search by name
+                torrents = _databaseService.SearchTorrentsByName(q, startIndex, pageSize, sortField, sortOrder); 
 
 
-            IEnumerable<TorrentIndexListingModel> models = ModeliseSearch(torrents);
-
-            return Json(new {
-                data = models,
-                itemsCount = models.Count() == pageSize ? _databaseService.GetTorrentsNumberWithDesc() : models.Count()
-            });
+            return FormatJsonData(torrents, pageIndex,pageSize);
         }
 
         public JsonResult RecentJSON(int pageIndex, int pageSize, String sortField, String sortOrder)
         {
-            if (sortField != null) //To be able to sort recent page
-                return SearchJSON(null, pageIndex,  pageSize,  sortField,  sortOrder);
-
-            int startIndex = (pageIndex - 1) * pageSize;
-
-            IEnumerable<Torrent> torrents = _databaseService.GetTorrents(startIndex, pageSize, "date", "desc");
-
-            IEnumerable<TorrentIndexListingModel> models = ModeliseSearch(torrents);
-
-            return Json(new
-            {
-                data = models,
-                itemsCount = models.Count() == pageSize ? _databaseService.GetTorrentsNumberWithDesc() : models.Count()
-            });
+            if (sortField != null)//To be able to sort recent page
+                return SearchJSON(null, pageIndex, pageSize, sortField, sortOrder);
+            else
+                return SearchJSON(null, pageIndex, pageSize, "date", "desc");
         }
 
         public JsonResult TopJSON()
         {
-            IEnumerable<Torrent> torrents = _databaseService.GetTorrents(1, 100, "peerNumber", "desc");
-
-            IEnumerable<TorrentIndexListingModel> models = ModeliseSearch(torrents);
-            return Json(new
-            {
-                data = models,
-                itemsCount = _databaseService.GetTorrentsNumberWithDesc()
-            });
+            IEnumerable<Torrent> torrents = _databaseService.GetTorrents(0, 99, "peerNumber", "desc");
+            return FormatJsonData(torrents, 0, 0);
         }
 
         public JsonResult BrowseJSON(String id, String tag, int pageIndex, int pageSize, String sortField, String sortOrder)
@@ -102,32 +80,44 @@ namespace Watcher.Controllers
             else
                 torrents = _databaseService.GetTorrentsByTags(id, startIndex, pageSize, sortField, sortOrder);
 
-
-            IEnumerable<TorrentIndexListingModel> models = ModeliseSearch(torrents);
-            return Json(new
-            {
-                data = models,
-                itemsCount = models.Count() == pageSize ?_databaseService.GetTorrentsNumberWithDesc():models.Count()
-            });
+            return FormatJsonData(torrents, pageIndex, pageSize);
         }
 
-        private IEnumerable<TorrentIndexListingModel> ModeliseSearch(IEnumerable<Torrent> torrents)
+        private IEnumerable<TorrentIndexListingModel> ModeliseJsonData(IEnumerable<Torrent> torrents)
         {
             var listingResult = torrents.Select(result => new TorrentIndexListingModel
             {
                 ID = result.ID,
                 Name = result.Name,
-                Date = FormatterUtil.FormatDate(result.Date),
-                Categories = FormatterUtil.FormatTags(result.Categories),
+                Date = Utils.FormatDate(result.Date),
+                Categories = Utils.FormatTags(result.Categories),
                 Type = result.Type,
                 MagnetLink = result.MagnetLink,
-                Size = FormatterUtil.FormatBytes(result.Size),
+                Size = Utils.FormatBytes(result.Size),
                 PeerNumber = result.Peers
             });
 
             return listingResult;
         }
 
+        private JsonResult FormatJsonData(IEnumerable<Torrent> torrents, int pageIndex, int pageSize)
+        {
+            IEnumerable<TorrentIndexListingModel> models = ModeliseJsonData(torrents);
+
+            long count = 0;
+            if (pageIndex > 1)
+                count = _databaseService.GetTorrentsNumberWithDescription();
+            else if (torrents.Count() == pageSize)
+                count = _databaseService.GetTorrentsNumberWithDescription();
+            else
+                count = torrents.Count();
+
+            return Json(new
+            {
+                data = models,
+                itemsCount = count
+            });
+        }
 
     }         
 }

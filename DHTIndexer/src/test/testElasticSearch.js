@@ -6,6 +6,6 @@ var ElasticSearch = require('../lib/Database/Elasticsearch');
 
 var indexer = new ElasticSearch(config.DEFAULT_ELASTIC_SEARCH_OPTIONS);
 
-//indexer.createIPIndex();
+indexer.createIPIndex();
 indexer.createTorrentIndex();
-//indexer.createRelationIndex();
+indexer.createRelationIndex();

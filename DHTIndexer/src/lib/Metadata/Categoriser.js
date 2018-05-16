@@ -67,18 +67,18 @@ class Categorizer {
 
             //default categorise by name if the extension is not recognised
             this.getVideoCategories(file, newTorrent);
-            if (torrent.type != '') {
+            if (torrent.categories.length != 0) {
                 torrent.type = 'Video';
                 return newTorrent;
             }
 
             this.getMediaCategories(file, newTorrent);
-            if (torrent.type != '') {
+            if (torrent.categories.length != 0) {
                 torrent.type = 'Media';
                 return newTorrent;
             }
             this.getDocCategories(file, newTorrent);
-            if (torrent.type != '') {
+            if (torrent.categories.length != 0) {
                 torrent.type = 'Doc';
                 return newTorrent;
             }
@@ -166,6 +166,8 @@ class Categorizer {
         } else if (file.name.toLowerCase().indexOf('postmortem') > -1) {
             torrent.categories.push('Game');
         } else if (file.name.toLowerCase().indexOf('steam') > -1) {
+            torrent.categories.push('Game');
+        } else if (file.name.toLowerCase().indexOf('repack') > -1) {
             torrent.categories.push('Game');
         }
     }

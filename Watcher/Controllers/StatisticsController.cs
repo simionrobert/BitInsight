@@ -20,7 +20,7 @@ namespace Watcher.Controllers
         public IActionResult Index()
         {
             Dictionary<String, long> categories = _databaseService.GetTorrentPeerCountByCategory();
-            long torrentNrWithDesc = _databaseService.GetTorrentsNumberWithDesc();
+            long torrentNrWithDesc = _databaseService.GetTorrentsNumberWithDescription();
             long torrentNrTotal = _databaseService.GetTorrentsTotalNumber();
             long torrentNrWithPeerListOnly = _databaseService.GetTorrentsNumberWithIP();
 

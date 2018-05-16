@@ -21,7 +21,7 @@ class ElasticSearch {
         this._getLastID() //is async but it is executed first
     }
 
-    indexTorrent(torrent,callback) {
+    indexTorrent(torrent, callback) {
         var update = {
             update: {
                 _index: 'torrent',
@@ -77,8 +77,8 @@ class ElasticSearch {
         this.recordInfohashQueue.push(jsonObject);
         this._queue(callback);
     }
-   
-    indexIP(torrent,callback) {
+
+    indexIP(torrent, callback) {
         if (torrent.listIP.length != 0) {
 
             //update torrent Peers value
@@ -173,7 +173,7 @@ class ElasticSearch {
                 body: this.recordIPQueue
             }, function (err, resp) {
             });
-            this.recordIPQueue =[];
+            this.recordIPQueue = [];
             console.log('Elasticsearch Class: IP and Relation Indexed')
 
             this.client.bulk({
@@ -199,13 +199,13 @@ class ElasticSearch {
         }
     }
 
-    getLastInfohashes(min,max,callback) {
+    getLastInfohashes(min, max, callback) {
         this.client.search({
             index: "torrent",
             body: {
                 _source: false,
                 sort: [{ "ID": { "order": "asc" } }],
-                size: max-min+1,
+                size: max - min + 1,
                 query: {
                     range: {
                         "ID": {
@@ -270,7 +270,12 @@ class ElasticSearch {
                                 "type": "long"
                             },
                             "Name": {
-                                "type": "text"
+                                "type": "text",
+                                "fields": {
+                                    "keyword": {
+                                        "type": "keyword"
+                                    }
+                                }
                             },
                             "Search": {
                                 "type": "text"
@@ -291,7 +296,7 @@ class ElasticSearch {
                             },
                             "Peers": { "type": "integer" },
                             "Size": { "type": "long" },
-                            "Date": {"type": "date"}
+                            "Date": { "type": "date" }
                         }
                     }
                 }

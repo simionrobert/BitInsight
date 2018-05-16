@@ -60,7 +60,6 @@ function startRegistering(file, endTime, periodTime) {
     }, periodTime)
 }
 
-
 var count = 0;
 crawler.start();
 startRegistering("resource/countPerMinute.txt",60 * 60 * 1000, 60 * 1000); //1h and each minute

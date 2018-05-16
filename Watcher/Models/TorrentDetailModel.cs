@@ -19,5 +19,11 @@ namespace Watcher.Models.Search
         public int PeerNumber;
         public IEnumerable<FileDetailModel> Files { get; set; }
         public List<String> IPs { get; set; }
+
+        public class FileDetailModel
+        {
+            public String Name;
+            public String Size;
+        }
     }
 }

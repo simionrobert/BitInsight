@@ -22,22 +22,22 @@ namespace Watcher.Controllers
         public IActionResult Index(string id)
         {
             Torrent result = _databaseService.GetTorrentByID(id);
-            RelationModel ips = _databaseService.GetIPsByTorrent(result.ID);
+            RelationModel ips = _databaseService.GetIPsOfTorrent(result.ID);
 
             TorrentDetailModel model = new TorrentDetailModel
             {
 
                 ID = result.ID,
                 Name = result.Name,
-                Date = FormatterUtil.FormatDate(result.Date),
-                Categories = FormatterUtil.FormatTags(result.Categories),
+                Date = Utils.FormatDate(result.Date),
+                Categories = Utils.FormatTags(result.Categories),
                 Type = result.Type,
                 MagnetLink = result.MagnetLink,
-                Size = FormatterUtil.FormatBytes(result.Size),
-                Files = result.Files.Select(file => new FileDetailModel
+                Size = Utils.FormatBytes(result.Size),
+                Files = result.Files.Select(file => new TorrentDetailModel.FileDetailModel
                 {
                     Name = file.Name,
-                    Size = FormatterUtil.FormatBytes(file.Size)
+                    Size = Utils.FormatBytes(file.Size)
                 }),
                 NrFiles = result.Files.Count(),
                 IPs = ips.IPs,

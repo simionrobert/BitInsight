@@ -48,7 +48,7 @@
 
 .categoryContainer {
     max-width: 45%;
-    margin: 0 auto;
+    margin: 30px auto;
     align-items: center;
     justify-content: space-around;
 }

@@ -47,7 +47,7 @@ peerDiscoveryService.on('cacheEmpty', function () {
 
 
 function manualIdentify() {
-    var listInfohashes = ['54057710b043cc0359724c42579c2b07ac8dd73a'];
+    var listInfohashes = ["f3077eaaa6cb8f420f97a4553905b3cac444d998", "a45776cef4455136f4782e331a87fee5cfbff599"];
 
     peerDiscoveryService.addToCache(listInfohashes);
     peerDiscoveryService.startService()
