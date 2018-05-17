@@ -4,7 +4,7 @@ const EventEmitter = require('events')
 const _ = require('lodash');
 const MetadataResolver = require('./MetadataResolver');
 const PeerDiscovery = require('./PeerDiscovery');
-const Categoriser = require('./Categoriser');
+const Categoriser = require('../Database/Categoriser');
 
 class MetadataService extends EventEmitter {
     constructor(opts) {

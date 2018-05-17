@@ -38,7 +38,7 @@
     <Compile Include="src\indexPeers.js">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\lib\Metadata\Categoriser.js">
+    <Compile Include="src\lib\Database\Categoriser.js">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\lib\Database\Elasticsearch.js">
