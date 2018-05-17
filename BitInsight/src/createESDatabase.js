@@ -4,7 +4,7 @@
 var elasticsearch = require('elasticsearch');
 var config = require('../config');
 
-client = new elasticsearch.Client(config.DEFAULT_ELASTIC_SEARCH_OPTIONS.connection);
+var client = new elasticsearch.Client(config.DEFAULT_ELASTIC_SEARCH_OPTIONS.connection);
 
 createTorrentIndex();
 createIPIndex();

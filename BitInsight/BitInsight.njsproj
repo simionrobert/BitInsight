@@ -12,7 +12,7 @@
     <ProjectGuid>bb3ae382-34e5-4b49-bd9a-74d9c07543a7</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>src\indexPeers.js</StartupFile>
+    <StartupFile>src\createESDatabase.js</StartupFile>
     <StartWebBrowser>False</StartWebBrowser>
     <SearchPath>
     </SearchPath>
