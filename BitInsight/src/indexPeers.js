@@ -5,7 +5,7 @@ process.env.UV_THREADPOOL_SIZE = 64
 const fs = require('fs');
 const config = require('../config');
 const ElasticSearch = require('./lib/Database/Elasticsearch');
-const PeerDiscoveryService = require('./lib/Metadata/PeerDiscoveryService');
+const PeerDiscoveryService = require('./lib/Services/PeerDiscoveryService');
 
 var indexer = new ElasticSearch(config.DEFAULT_ELASTIC_SEARCH_OPTIONS);
 var peerDiscoveryService = new PeerDiscoveryService(config);
@@ -45,13 +45,6 @@ peerDiscoveryService.on('cacheEmpty', function () {
     })
 })
 
-
-function manualIdentify() {
-    var listInfohashes = ["f3077eaaa6cb8f420f97a4553905b3cac444d998", "a45776cef4455136f4782e331a87fee5cfbff599"];
-
-    peerDiscoveryService.addToCache(listInfohashes);
+indexer.ready(function () {
     peerDiscoveryService.startService()
-}
-
-
-peerDiscoveryService.startService()
+});

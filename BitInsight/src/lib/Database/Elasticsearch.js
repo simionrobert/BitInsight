@@ -16,9 +16,12 @@ class ElasticSearch {
         this.recordTorrentQueue = [];
         this.recordIPQueue = [];
         this.recordRelationQueue = [];
+    }
 
-        // for dht indexing
-        this._getLastID() //is async but it is executed first
+    ready(callback) {
+
+        // do something async and call the callback:
+        this._getLastID(callback)
     }
 
     indexTorrent(torrent, callback) {
@@ -183,7 +186,9 @@ class ElasticSearch {
 
             this.recordTorrentQueue = [];
             console.log('Elasticsearch Class: Peers updated')
-            callback();
+
+            if (callback != null)
+                callback();
             return;
         }
 
@@ -195,7 +200,8 @@ class ElasticSearch {
 
             this.recordTorrentQueue = [];
             console.log('Elasticsearch Class: Metadata Indexed')
-            callback();
+            if (callback != null)
+                callback();
         }
     }
 
@@ -235,7 +241,7 @@ class ElasticSearch {
         return listInfohashes;
     }
 
-    _getLastID() {
+    _getLastID(callback) {
         this.client.search({
             index: 'torrent',
             _source: false,
@@ -256,6 +262,7 @@ class ElasticSearch {
             }
 
             this._id = response.aggregations.max_id.value + 1;
+            callback();
         }.bind(this))
     }
 }

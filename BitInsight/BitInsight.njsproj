@@ -12,7 +12,7 @@
     <ProjectGuid>bb3ae382-34e5-4b49-bd9a-74d9c07543a7</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>src\createESDatabase.js</StartupFile>
+    <StartupFile>src\indexInfohashesManual.js</StartupFile>
     <StartWebBrowser>False</StartWebBrowser>
     <SearchPath>
     </SearchPath>
@@ -44,7 +44,7 @@
     <Compile Include="src\lib\Database\Elasticsearch.js">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\lib\Services\MetadataService.js">
+    <Compile Include="src\lib\Services\MetadataResolverService.js">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\lib\Services\PeerDiscoveryService.js">
@@ -53,6 +53,7 @@
     <Compile Include="src\indexInfohashes.js">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="src\indexInfohashesManual.js" />
     <Compile Include="src\test\test.js">
       <SubType>Code</SubType>
     </Compile>
@@ -70,7 +71,7 @@
     <Compile Include="src\lib\Services\PeerDiscovery.js">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\createESDatabase.js">
+    <Compile Include="src\lib\Database\CreateESDatabase.js">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\test\testMetadataResolver.js">

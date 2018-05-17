@@ -2,7 +2,7 @@
 
 
 var elasticsearch = require('elasticsearch');
-var config = require('../config');
+var config = require('../../../config');
 
 var client = new elasticsearch.Client(config.DEFAULT_ELASTIC_SEARCH_OPTIONS.connection);
 

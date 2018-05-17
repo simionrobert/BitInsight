@@ -10,6 +10,7 @@ const fs = require('fs');
 
 var indexer = new ElasticSearch(config.DEFAULT_ELASTIC_SEARCH_OPTIONS);
 var crawler = new DHTCrawler(config.DEFAULT_CRAWLER_OPTIONS);
+var count = 0;
 
 crawler.on('infohash', function (listInfohash, rinfo) {
 
@@ -60,11 +61,11 @@ function startRegistering(file, endTime, periodTime) {
     }, periodTime)
 }
 
-var count = 0;
-crawler.start();
-startRegistering("resource/countPerMinute.txt",60 * 60 * 1000, 60 * 1000); //1h and each minute
+indexer.ready(function () {
 
-
+    crawler.start();
+    startRegistering("resource/countPerMinute.txt", 60 * 60 * 1000, 60 * 1000); //1h and each minute
+});
 
 //function startSlaveProcess() {
 //    const subprocess = spawn('node', ['"' + __dirname + '/slave.js' + '"'], {

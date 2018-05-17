@@ -1,13 +1,12 @@
 ﻿'use strict';
 
 var EventEmitter = require('events')
-var PeerDiscovery = require('./PeerDiscovery');
-
 const parseTorrent = require('parse-torrent')
 const Protocol = require('bittorrent-protocol');
 const ut_metadata = require('ut_metadata');
 
 const net = require('net');
+var PeerDiscovery = require('./PeerDiscovery');
 const utils = require('../utils');
 
 

@@ -5,7 +5,7 @@ process.env.UV_THREADPOOL_SIZE = 64
 const fs = require('fs');
 const config = require('../config');
 const ElasticSearch = require('./lib/Database/Elasticsearch');
-const MetadataService = require('./lib/Metadata/MetadataService');
+const MetadataService = require('./lib/Services/MetadataResolverService');
 
 var indexer = new ElasticSearch(config.DEFAULT_ELASTIC_SEARCH_OPTIONS);
 var metadataService = new MetadataService(config);
@@ -56,6 +56,8 @@ metadataService.on('cacheEmpty', function () {
     })
 })
 
-metadataService.startService()
+indexer.ready(function () {
+    metadataService.startService()
+});
 
 
