@@ -44,10 +44,10 @@
     <Compile Include="src\lib\Database\Elasticsearch.js">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\lib\Metadata\MetadataService.js">
+    <Compile Include="src\lib\Services\MetadataService.js">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\lib\Metadata\PeerDiscoveryService.js">
+    <Compile Include="src\lib\Services\PeerDiscoveryService.js">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\indexInfohashes.js">
@@ -63,14 +63,14 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\lib\Crawling\DHTCrawler.js" />
-    <Compile Include="src\lib\Metadata\MetadataResolver.js" />
+    <Compile Include="src\lib\Services\MetadataResolver.js" />
     <Compile Include="src\lib\Crawling\RoutingTable.js">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\lib\utils.js">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\lib\Metadata\PeerDiscovery.js">
+    <Compile Include="src\lib\Services\PeerDiscovery.js">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\createESDatabase.js">
@@ -96,7 +96,7 @@
     <Folder Include="src\lib\" />
     <Folder Include="src\" />
     <Folder Include="src\lib\Crawling\" />
-    <Folder Include="src\lib\Metadata\" />
+    <Folder Include="src\lib\Services\" />
     <Folder Include="src\lib\Database\" />
     <Folder Include="src\test\" />
   </ItemGroup>
