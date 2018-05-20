@@ -6,8 +6,6 @@
         tableMaxSize: 200,
         dhtAnnouncing: 1000,
         BEP51Mode: false,
-        verticalAttackMode: false,
-        verticalAttackNrNodes: 8,
         BOOTSTRAP_NODES : [
             ['router.bittorrent.com', 6881],
             ['dht.transmissionbt.com', 6881]

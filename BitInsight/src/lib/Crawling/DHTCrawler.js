@@ -17,8 +17,6 @@ class DHTCrawler extends EventEmitter {
         this.dhtAnnouncing = options.dhtAnnouncing || 1000;
         this.BOOTSTRAP_NODES = options.BOOTSTRAP_NODES;
 
-        this.verticalAttackMode = options.verticalAttackMode || false;
-        this.verticalAttackNrNodes = options.verticalAttackNrNodes || 8;
         this.BEP51Mode = options.BEP51Mode || true;
 
         this.socket = dgram.createSocket('udp4');
@@ -42,16 +40,12 @@ class DHTCrawler extends EventEmitter {
         });
 
         this.refreshInterval = setInterval(function () {
+            this.routingTable.nodes = [];
             this.contactBootstrapNodes();
             this.horrizontalAttack();
 
-            if (this.verticalAttackMode == true)
-                this.verticalAttack();
-
             if (this.BEP51Mode == true)
                 this.indexDHT();
-
-            this.routingTable.nodes = [];
         }.bind(this), this.dhtAnnouncing);
     }
 
@@ -84,21 +78,51 @@ class DHTCrawler extends EventEmitter {
         }.bind(this));
     }
 
-    verticalAttack() {
-        this.routingTable.nodes.forEach(function (node) {
-            for (var i = 0; i < this.verticalAttackNrNodes; i++) {
-                utils.generateRandomIDAsync(node, null,function (node, x, randomID) {
+    sendKRPC(msg, rinfo) {
+        var buf = bencode.encode(msg);
+        this.socket.send(buf, 0, buf.length, rinfo.port, rinfo.address);
+    }
 
-                    this.sendFindNodeRequest({
-                        address: node.address,
-                        port: node.port
-                    }, utils.generateNeighborID(node.nid, randomID));
+    sendFindNodeRequest(rinfo, personalID) {
 
-                }.bind(this));
-            }
+        // generateNeighborID(nid, this.routingTable.nid) to have greater chance that others store my id in their routing table (close to him)
+        // this.routingTable.nid to have same id, if i send to him my id. Random or this?
+
+        utils.generateRandomIDAsync(rinfo, personalID, function (rinfo, personalID, targetID) {
+            var msg = {
+                t: targetID.slice(0, 4),
+                y: 'q',
+                q: 'find_node',
+                a: {
+                    id: personalID,
+                    target: targetID
+                }
+            };
+            this.sendKRPC(msg, rinfo);
+
         }.bind(this));
     }
 
+    sendSampleInfohashesRequest(rinfo, nid) {
+        utils.generateRandomIDAsync(rinfo, nid, function (rinfo, nid, targetID) {
+            var msg = {
+                t: targetID.slice(0, 4),
+                y: 'q',
+                q: 'sample_infohashes',
+                a: {
+                    id: this.routingTable.nid,
+                    target: targetID
+                }
+            };
+
+            this.sendKRPC(msg, rinfo);
+
+        }.bind(this));
+    }
+
+
+
+    ////////////////////////////////////////////////Messages got////////////////////////////////////
     onMessage(data, rinfo) {
         try {
             var msg = bencode.decode(data);
@@ -130,57 +154,29 @@ class DHTCrawler extends EventEmitter {
             }
             else if (msg.y == 'q' && msg.q == 'ping') {
 
-                // horrizontal attack: not to be deleted from nodes tables
+                // horrizontal attack: not to be deleted from nodes tables or Bootstrap node's protection
                 this.onPingRequest(msg, rinfo);
             }
             else if (msg.y == 'q' && msg.q == 'find_node') {
 
-                // horrizontal attack: not to be deleted from nodes tables
+                // horrizontal attack: not to be deleted from nodes tables or Bootstrap node's protection
                 this.onFindNodeRequest(msg, rinfo);
             }
             else if (msg.y == 'q' && msg.q == 'get_peers') {
 
                 // passively observe get_peers querries
                 // infohash catched
-                
-                this._emitStandardForm(msg.a.info_hash, rinfo,0);
                 this.onGetPeersRequest(msg, rinfo);
             }
             else if (msg.y == 'q' && msg.q == 'announce_peer') {
 
                 // infohash catched
-                this._emitStandardForm(msg.a.info_hash, rinfo,0);
                 this.onAnnouncePeerRequest(msg, rinfo);
             }
         }
         catch (err) {
             console.log(err.message);
         }
-    }
-
-    sendKRPC(msg, rinfo) {
-        var buf = bencode.encode(msg);
-        this.socket.send(buf, 0, buf.length, rinfo.port, rinfo.address);
-    }
-
-    sendFindNodeRequest(rinfo, nodeID) {
-
-        // generateNeighborID(nid, this.routingTable.nid) to make other store my id in their routing table (close to him)
-        // this.routingTable.nid to have same id, if i send to him my id. Random or this?
-
-        utils.generateRandomIDAsync(rinfo, nodeID,function (rinfo, nodeID, targetID) {
-            var msg = {
-                t: targetID.slice(0, 4),
-                y: 'q',
-                q: 'find_node',
-                a: {
-                    id: nodeID,
-                    target: targetID
-                }
-            };
-            this.sendKRPC(msg, rinfo);
-
-        }.bind(this));
     }
 
     onFindNodeResponse(data) {
@@ -193,24 +189,9 @@ class DHTCrawler extends EventEmitter {
         }.bind(this));
     }
 
-    sendSampleInfohashesRequest(rinfo, nid) {
-        utils.generateRandomIDAsync(rinfo, nid,function (rinfo, nid, targetID) {
-            var msg = {
-                t: targetID.slice(0, 4),
-                y: 'q',
-                q: 'sample_infohashes',
-                a: {
-                    id: this.routingTable.nid,
-                    target: targetID
-                }
-            };
-
-            this.sendKRPC(msg, rinfo);
-
-        }.bind(this));
-    }
-
     onPingRequest(msg, rinfo) {
+        //TODO: Verify if it's a bootstrap node. If it is, send only my id
+        //QUestion: Does bootstrap verify its nodes? Maybe
 
         var tid = msg.t;
         var nid = msg.a.id;
@@ -230,6 +211,7 @@ class DHTCrawler extends EventEmitter {
 
 
     onFindNodeRequest(msg, rinfo) {
+         //TODO: Verify if it's a bootstrap node. If it is, send only my id
         var tid = msg.t;
         var nid = msg.a.id;
 
@@ -242,12 +224,14 @@ class DHTCrawler extends EventEmitter {
             y: 'r',
             r: {
                 id: utils.generateNeighborID(nid, this.routingTable.nid),
-                nodes: this.routingTable.nid
+                nodes: this.routingTable.nid //TODO: send my info (ID+IP+PORT)
+                //Is it ok to send my id? I think no. 
             }
         }, rinfo);
     }
 
     onGetPeersRequest(msg, rinfo) {
+         //TODO: Verify if it's a bootstrap node. If it is, send only my id
 
         var infohash = msg.a.info_hash;
         var tid = msg.t;
@@ -267,9 +251,13 @@ class DHTCrawler extends EventEmitter {
                 token: token
             }
         }, rinfo);
+
+        this._emitStandardForm(msg.a.info_hash, rinfo, 0);
     }
 
     onAnnouncePeerRequest(msg, rinfo) {
+         //TODO: Verify if it's a bootstrap node. If it is, send only my id
+
         var port;
         var infohash = msg.a.info_hash;
         var token = msg.a.token;
@@ -302,6 +290,9 @@ class DHTCrawler extends EventEmitter {
                 id: utils.generateNeighborID(nid, this.routingTable.nid)
             }
         }, rinfo);
+
+
+        this._emitStandardForm(msg.a.info_hash, rinfo, 0);
     }
 
     _emitStandardForm(infohash,rinfo,type) {
