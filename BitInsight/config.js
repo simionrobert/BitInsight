@@ -3,9 +3,11 @@
     DEFAULT_CRAWLER_OPTIONS : {
         address: '0.0.0.0',
         port: 6881,
-        tableMaxSize: 200,
+        tableMaxSize: 128,
         dhtAnnouncing: 1000,
-        BEP51Mode: false,
+        BEP51Mode: true,
+        verticalAttackMode: false,
+        verticalAttackNrNodes: 8,
         BOOTSTRAP_NODES : [
             ['router.bittorrent.com', 6881],
             ['dht.transmissionbt.com', 6881]

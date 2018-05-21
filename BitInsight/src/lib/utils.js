@@ -30,6 +30,21 @@ exports.decodeNodes = function (data) {
     return nodes;
 };
 
+exports.encodeNodes = function (nodes) {
+
+    return Buffer.concat(nodes.map((node) => Buffer.concat([node.nid, _encodeIP(node.address), _encodePort(node.port)])))
+};
+
+function _encodeIP(ip) {
+    return Buffer.from(ip.split('.').map((i) => parseInt(i)))
+};
+
+function _encodePort(port) {
+    const data = Buffer.alloc(2)
+    data.writeUInt16BE(port, 0)
+    return data
+};
+
 
 exports.parseMetadataTracker = function (parsedTorrent) {
     var files = [];

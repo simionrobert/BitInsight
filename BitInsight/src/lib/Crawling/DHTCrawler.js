@@ -6,7 +6,8 @@ var bencode = require('bencode');
 var utils = require('../utils');
 var RoutingTable = require('./RoutingTable');
 
-
+//TODO: Implement BitTorrent Protocol Extension http://www.bittorrent.org/beps/bep_0005.html Tracker peers exhange DHT data
+//TODO: Make vertical attack only on interesting targets
 class DHTCrawler extends EventEmitter {
 
     constructor(options) {
@@ -16,7 +17,8 @@ class DHTCrawler extends EventEmitter {
         this.port = options.port || 6881;
         this.dhtAnnouncing = options.dhtAnnouncing || 1000;
         this.BOOTSTRAP_NODES = options.BOOTSTRAP_NODES;
-
+        this.verticalAttackMode = options.verticalAttackMode || false;
+        this.verticalAttackNrNodes = options.verticalAttackNrNodes || 8;
         this.BEP51Mode = options.BEP51Mode || true;
 
         this.socket = dgram.createSocket('udp4');
@@ -40,12 +42,17 @@ class DHTCrawler extends EventEmitter {
         });
 
         this.refreshInterval = setInterval(function () {
-            this.routingTable.nodes = [];
+
             this.contactBootstrapNodes();
             this.horrizontalAttack();
 
+            if (this.verticalAttackMode == true) //TODO: Heuristically decide if vertical attack is feazible
+                this.verticalAttack();
+
             if (this.BEP51Mode == true)
                 this.indexDHT();
+
+            this.routingTable.nodes = [];
         }.bind(this), this.dhtAnnouncing);
     }
 
@@ -60,12 +67,34 @@ class DHTCrawler extends EventEmitter {
         }.bind(this));
     }
 
+
     horrizontalAttack() {
+
+        // generateNeighborID(nid, this.routingTable.nid) to have greater chance that others store my id in their routing table (close to him)
+        // this.routingTable.nid to have same id, if i send to him my id. Random or this?
         this.routingTable.nodes.forEach(function (node) {
             this.sendFindNodeRequest({
                 address: node.address,
                 port: node.port
-            }, utils.generateNeighborID(node.nid, this.routingTable.nid));
+            }, utils.generateNeighborID(node.nid, this.routingTable.nid))
+        }.bind(this));
+    }
+
+    verticalAttack() {
+        this.routingTable.nodes.forEach(function (node) {
+            for (var i = 0; i < this.verticalAttackNrNodes; i++) {
+                utils.generateRandomIDAsync(node, null, function (node, x, randomID) {
+
+                    // We limit the number of outgoing UDP requests to 1000 packages per second.
+                    setTimeout(function () {
+                        this.sendFindNodeRequest({
+                            address: node.address,
+                            port: node.port
+                        }, utils.generateNeighborID(node.nid, randomID));
+                    }.bind(this), 0)
+
+                }.bind(this));
+            }
         }.bind(this));
     }
 
@@ -84,10 +113,6 @@ class DHTCrawler extends EventEmitter {
     }
 
     sendFindNodeRequest(rinfo, personalID) {
-
-        // generateNeighborID(nid, this.routingTable.nid) to have greater chance that others store my id in their routing table (close to him)
-        // this.routingTable.nid to have same id, if i send to him my id. Random or this?
-
         utils.generateRandomIDAsync(rinfo, personalID, function (rinfo, personalID, targetID) {
             var msg = {
                 t: targetID.slice(0, 4),
@@ -111,7 +136,7 @@ class DHTCrawler extends EventEmitter {
                 q: 'sample_infohashes',
                 a: {
                     id: this.routingTable.nid,
-                    target: targetID
+                    target: targetID //TODO:random or static->speed
                 }
             };
 
@@ -211,7 +236,6 @@ class DHTCrawler extends EventEmitter {
 
 
     onFindNodeRequest(msg, rinfo) {
-         //TODO: Verify if it's a bootstrap node. If it is, send only my id
         var tid = msg.t;
         var nid = msg.a.id;
 
@@ -224,15 +248,12 @@ class DHTCrawler extends EventEmitter {
             y: 'r',
             r: {
                 id: utils.generateNeighborID(nid, this.routingTable.nid),
-                nodes: this.routingTable.nid //TODO: send my info (ID+IP+PORT)
-                //Is it ok to send my id? I think no. 
+                nodes: utils.encodeNodes(this.routingTable.pop8())
             }
         }, rinfo);
     }
 
     onGetPeersRequest(msg, rinfo) {
-         //TODO: Verify if it's a bootstrap node. If it is, send only my id
-
         var infohash = msg.a.info_hash;
         var tid = msg.t;
         var nid = msg.a.id;
@@ -247,7 +268,7 @@ class DHTCrawler extends EventEmitter {
             y: 'r',
             r: {
                 id: utils.generateNeighborID(infohash, this.routingTable.nid),
-                nodes: '',
+                nodes: utils.encodeNodes(this.routingTable.pop8()),
                 token: token
             }
         }, rinfo);
@@ -256,8 +277,6 @@ class DHTCrawler extends EventEmitter {
     }
 
     onAnnouncePeerRequest(msg, rinfo) {
-         //TODO: Verify if it's a bootstrap node. If it is, send only my id
-
         var port;
         var infohash = msg.a.info_hash;
         var token = msg.a.token;

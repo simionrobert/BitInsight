@@ -13,6 +13,17 @@ class RoutingTable {
             this.nodes.push(node);
         }
     }
+
+    pop8() {
+        if (this.nodes.length >= 8) {
+            return this.nodes.slice(0, 8)
+        } else if (this.nodes.length > 0) {
+            return new Array(8).join().split(',').map(() => this.nodes[0])
+        }
+        return []
+    }
+
+
 }
 
 module.exports = RoutingTable;
