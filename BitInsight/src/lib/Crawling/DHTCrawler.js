@@ -248,7 +248,7 @@ class DHTCrawler extends EventEmitter {
             y: 'r',
             r: {
                 id: utils.generateNeighborID(nid, this.routingTable.nid),
-                nodes: utils.encodeNodes(this.routingTable.pop8())
+                nodes: utils.encodeNodes(this.routingTable.pop8())  //Previous: this.routingTable.nid
             }
         }, rinfo);
     }
@@ -268,7 +268,7 @@ class DHTCrawler extends EventEmitter {
             y: 'r',
             r: {
                 id: utils.generateNeighborID(infohash, this.routingTable.nid),
-                nodes: utils.encodeNodes(this.routingTable.pop8()),
+                nodes: utils.encodeNodes(this.routingTable.pop8()), //Previous:''
                 token: token
             }
         }, rinfo);
