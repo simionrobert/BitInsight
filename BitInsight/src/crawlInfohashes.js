@@ -11,13 +11,15 @@ const fs = require('fs');
 var indexer = new ElasticSearch(config.DEFAULT_ELASTIC_SEARCH_OPTIONS);
 var crawler = new DHTCrawler(config.DEFAULT_CRAWLER_OPTIONS);
 var count = 0;
+var id = 0;
 
 crawler.on('infohash', function (listInfohash, rinfo) {
 
     setImmediate((listInfohash, rinfo) => {
         for (let i = 0; i < listInfohash.length; i++) {
-            console.log((count++) + ". magnet:?xt=urn:btih:%s from %s:%s", listInfohash[i].toString("hex"), rinfo.address, rinfo.port);
+            console.log((id++) + ". magnet:?xt=urn:btih:%s from %s:%s", listInfohash[i].toString("hex"), rinfo.address, rinfo.port);
             indexer.indexInfohash(listInfohash[i]);
+            count++;
         }
     }, listInfohash, rinfo);
 });

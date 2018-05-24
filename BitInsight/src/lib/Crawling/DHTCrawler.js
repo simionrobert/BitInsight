@@ -67,7 +67,13 @@ class DHTCrawler extends EventEmitter {
         }.bind(this));
     }
 
-
+      /* 
+   * Send KRPC find_node query to all nodes in the kbucket. The queryingNodeId is
+   * calculated by using some high bytes of peer node's id, which makes our id close
+   * to the peer node XOR wise.
+   * After broadcasting, nodes in the kbucket are useless for crawler's sake. Just
+   * empty the kbucket for future peer nodes.
+   */
     horrizontalAttack() {
 
         // generateNeighborID(nid, this.routingTable.nid) to have greater chance that others store my id in their routing table (close to him)
@@ -107,11 +113,23 @@ class DHTCrawler extends EventEmitter {
         }.bind(this));
     }
 
+
+      /*
+   * The KRPC protocol is a simple RPC mechanism consisting of bencoded dictionaries sent
+   * over UDP. A single query packet is sent out and a single packet is sent in response. 
+   * There is no retry.
+   */
     sendKRPC(msg, rinfo) {
         var buf = bencode.encode(msg);
         this.socket.send(buf, 0, buf.length, rinfo.port, rinfo.address);
     }
 
+      /*
+   * The KRPC find_node query lets other DHT peer nodes know us. Before having any peer
+   * nodes, bootstrap nodes are used to query selfId. Then nodes from find_node responses
+   * can be used to fill up the kbucket. Once there are some nodes in the kbucket, further
+   * find_node queries can be made by using peer nodes' neighbor id.
+   */
     sendFindNodeRequest(rinfo, personalID) {
         utils.generateRandomIDAsync(rinfo, personalID, function (rinfo, personalID, targetID) {
             var msg = {
@@ -253,6 +271,12 @@ class DHTCrawler extends EventEmitter {
         }, rinfo);
     }
 
+      /*
+   * First 2 bytes of infohash are used to be the token. If the peer querying for
+   * the infohash finds it in the future, it is supposed to send announce_peer to
+   * us with the token, which can be used to verify the announce_peer packet.
+   * The infohash in the message is not guaranteed to be legit.  
+   */
     onGetPeersRequest(msg, rinfo) {
         var infohash = msg.a.info_hash;
         var tid = msg.t;
@@ -291,6 +315,11 @@ class DHTCrawler extends EventEmitter {
             return;
         }
 
+
+            /* There is an optional argument called implied_port which value is either 0 or 1.
+     * If it is present and non-zero, the port argument should be ignored and the source 
+     * port of the UDP packet should be used as the peer's port instead.
+     */
         if (msg.a.implied_port != undefined && msg.a.implied_port != 0) {
             port = rinfo.port;
         }

@@ -12,7 +12,7 @@
     <ProjectGuid>bb3ae382-34e5-4b49-bd9a-74d9c07543a7</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>src\indexInfohashes.js</StartupFile>
+    <StartupFile>src\crawlInfohashes.js</StartupFile>
     <StartWebBrowser>False</StartWebBrowser>
     <SearchPath>
     </SearchPath>
@@ -50,7 +50,7 @@
     <Compile Include="src\lib\Services\PeerDiscoveryService.js">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\indexInfohashes.js">
+    <Compile Include="src\crawlInfohashes.js">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\indexInfohashesManual.js" />
@@ -87,7 +87,6 @@
     <Content Include="resource\lastInfohashIdIPs.txt" />
     <Content Include="resource\lastInfohashIdMetadata.txt" />
     <Content Include="package.json" />
-    <Content Include="README.md" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="resource\" />
