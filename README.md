@@ -53,10 +53,10 @@ cd MyLocation
 # Install NPM dependencies
 npm install
 
-#Download and install https://www.elastic.co/downloads/elasticsearch 
+# Download and install https://www.elastic.co/downloads/elasticsearch 
 Run bin/elasticsearch (or bin\elasticsearch.bat on Windows)
 
-#(Optionally) Download and install https://www.elastic.co/downloads/kibana
+# (Optionally) Download and install https://www.elastic.co/downloads/kibana
 Run bin/kibana (or bin\kibana.bat on Windows)
 ```
 
@@ -73,6 +73,21 @@ node crawlInfohases.js
 node indexMetadata.js
 
 # Choice 3. Getting peers IP address for each infohash from the db (infohashes must be prior in db)
+
+#You need to access http://localhost:5601/app/kibana#/dev_tools/console?_g=() and run this command
+PUT /_ingest/pipeline/geoip?pretty
+{
+ "description" : "Add geoip information to the given IP address",
+ "processors" : [
+   {
+     "geoip" : {
+        "field" : "IP"
+      }
+   }
+ ]
+}
+
+#Then start indexing IPs
 node indexPeers.js
 
 # Visit http://localhost:5601/app/kibana to view your data
