@@ -53,17 +53,29 @@ cd MyLocation
 # Install NPM dependencies
 npm install
 
-# First, create elasticsearch database index mappings
+#Download and install https://www.elastic.co/downloads/elasticsearch 
+Run bin/elasticsearch (or bin\elasticsearch.bat on Windows)
+
+#(Optionally) Download and install https://www.elastic.co/downloads/kibana
+Run bin/kibana (or bin\kibana.bat on Windows)
+```
+
+## Usage
+
+```
+# Create elasticsearch database index mappings
 node createESDatabase.js
 
-# 1. Indexing infohases
-node indexInfohases.js
+# Choice 1. Crawling infohashes
+node crawlInfohases.js
 
-# 2. Download metadata for each infohash from the db
+# Choice 2. Download metadata for each infohash from the db (infohashes must be prior in db)
 node indexMetadata.js
 
-# 3. Getting peers IP address for each infohash from the db
+# Choice 3. Getting peers IP address for each infohash from the db (infohashes must be prior in db)
 node indexPeers.js
+
+# Visit http://localhost:5601/app/kibana to view your data
 ```
 
 **Aditional notes:**
