@@ -15,11 +15,12 @@ class DHTCrawler extends EventEmitter {
 
         this.address = options.address || '0.0.0.0';
         this.port = options.port || 6881;
-        this.dhtAnnouncing = options.dhtAnnouncing || 1000;
+        this.dhtAnnouncingBootstrap = options.dhtAnnouncingBootstrap || 1000;
+        this.dhtAnnouncingTable = options.dhtAnnouncingTable || 1000;
         this.BOOTSTRAP_NODES = options.BOOTSTRAP_NODES;
         this.verticalAttackMode = options.verticalAttackMode || false;
         this.verticalAttackNrNodes = options.verticalAttackNrNodes || 8;
-        this.BEP51Mode = options.BEP51Mode || true;
+        this.BEP51Mode = options.BEP51Mode || false;
 
         this.socket = dgram.createSocket('udp4');
         this.routingTable = new RoutingTable(options.tableMaxSize || 128);
@@ -41,9 +42,11 @@ class DHTCrawler extends EventEmitter {
             console.error("UDP error: %s", err);
         });
 
-        this.refreshInterval = setInterval(function () {
-
+        setInterval(function () {
             this.contactBootstrapNodes();
+        }.bind(this), this.dhtAnnouncingBootstrap);
+
+        setInterval(function () {
             this.horrizontalAttack();
 
             if (this.verticalAttackMode == true) //TODO: Heuristically decide if vertical attack is feazible
@@ -53,11 +56,10 @@ class DHTCrawler extends EventEmitter {
                 this.indexDHT();
 
             this.routingTable.nodes = [];
-        }.bind(this), this.dhtAnnouncing);
+        }.bind(this), this.dhtAnnouncingTable);
     }
 
     end() {
-        clearInterval(this.refreshInterval);
         this.socket.close();
     }
 
@@ -67,13 +69,13 @@ class DHTCrawler extends EventEmitter {
         }.bind(this));
     }
 
-      /* 
-   * Send KRPC find_node query to all nodes in the kbucket. The queryingNodeId is
-   * calculated by using some high bytes of peer node's id, which makes our id close
-   * to the peer node XOR wise.
-   * After broadcasting, nodes in the kbucket are useless for crawler's sake. Just
-   * empty the kbucket for future peer nodes.
-   */
+    /* 
+ * Send KRPC find_node query to all nodes in the kbucket. The queryingNodeId is
+ * calculated by using some high bytes of peer node's id, which makes our id close
+ * to the peer node XOR wise.
+ * After broadcasting, nodes in the kbucket are useless for crawler's sake. Just
+ * empty the kbucket for future peer nodes.
+ */
     horrizontalAttack() {
 
         // generateNeighborID(nid, this.routingTable.nid) to have greater chance that others store my id in their routing table (close to him)
@@ -114,22 +116,22 @@ class DHTCrawler extends EventEmitter {
     }
 
 
-      /*
-   * The KRPC protocol is a simple RPC mechanism consisting of bencoded dictionaries sent
-   * over UDP. A single query packet is sent out and a single packet is sent in response. 
-   * There is no retry.
-   */
+    /*
+ * The KRPC protocol is a simple RPC mechanism consisting of bencoded dictionaries sent
+ * over UDP. A single query packet is sent out and a single packet is sent in response. 
+ * There is no retry.
+ */
     sendKRPC(msg, rinfo) {
         var buf = bencode.encode(msg);
         this.socket.send(buf, 0, buf.length, rinfo.port, rinfo.address);
     }
 
-      /*
-   * The KRPC find_node query lets other DHT peer nodes know us. Before having any peer
-   * nodes, bootstrap nodes are used to query selfId. Then nodes from find_node responses
-   * can be used to fill up the kbucket. Once there are some nodes in the kbucket, further
-   * find_node queries can be made by using peer nodes' neighbor id.
-   */
+    /*
+ * The KRPC find_node query lets other DHT peer nodes know us. Before having any peer
+ * nodes, bootstrap nodes are used to query selfId. Then nodes from find_node responses
+ * can be used to fill up the kbucket. Once there are some nodes in the kbucket, further
+ * find_node queries can be made by using peer nodes' neighbor id.
+ */
     sendFindNodeRequest(rinfo, personalID) {
         utils.generateRandomIDAsync(rinfo, personalID, function (rinfo, personalID, targetID) {
             var msg = {
@@ -185,8 +187,7 @@ class DHTCrawler extends EventEmitter {
 
                         listInfohash.push(infohash);
                     }
-
-                    this._emitStandardForm(listInfohash, rinfo,1);
+                    this.emit('listInfohash', listInfohash, rinfo);
                     this.onFindNodeResponse(msg.r.nodes);
                 }
             }
@@ -218,7 +219,7 @@ class DHTCrawler extends EventEmitter {
             }
         }
         catch (err) {
-            console.log(err.message);
+
         }
     }
 
@@ -271,12 +272,12 @@ class DHTCrawler extends EventEmitter {
         }, rinfo);
     }
 
-      /*
-   * First 2 bytes of infohash are used to be the token. If the peer querying for
-   * the infohash finds it in the future, it is supposed to send announce_peer to
-   * us with the token, which can be used to verify the announce_peer packet.
-   * The infohash in the message is not guaranteed to be legit.  
-   */
+    /*
+ * The infohash in the message is not guaranteed to be legit.
+ * First 2 bytes of infohash are used to be the token. If the peer querying for
+ * the infohash finds it in the future, it is supposed to send announce_peer to
+ * us with the token, which can be used to verify the announce_peer packet.
+ */
     onGetPeersRequest(msg, rinfo) {
         var infohash = msg.a.info_hash;
         var tid = msg.t;
@@ -297,7 +298,7 @@ class DHTCrawler extends EventEmitter {
             }
         }, rinfo);
 
-        this._emitStandardForm(msg.a.info_hash, rinfo, 0);
+        //this.emit('infohash', infohash, rinfo);
     }
 
     onAnnouncePeerRequest(msg, rinfo) {
@@ -316,10 +317,10 @@ class DHTCrawler extends EventEmitter {
         }
 
 
-            /* There is an optional argument called implied_port which value is either 0 or 1.
-     * If it is present and non-zero, the port argument should be ignored and the source 
-     * port of the UDP packet should be used as the peer's port instead.
-     */
+        /* There is an optional argument called implied_port which value is either 0 or 1.
+ * If it is present and non-zero, the port argument should be ignored and the source 
+ * port of the UDP packet should be used as the peer's port instead.
+ */
         if (msg.a.implied_port != undefined && msg.a.implied_port != 0) {
             port = rinfo.port;
         }
@@ -340,19 +341,7 @@ class DHTCrawler extends EventEmitter {
         }, rinfo);
 
 
-        this._emitStandardForm(msg.a.info_hash, rinfo, 0);
-    }
-
-    _emitStandardForm(infohash,rinfo,type) {
-        if (type) {
-            this.emit('infohash', infohash, rinfo);
-        } else {
-            var listInfohash = [];
-            listInfohash.push(infohash);
-
-            this.emit('infohash', listInfohash, rinfo);
-        }
-        
+        this.emit('infohash', infohash, rinfo);
     }
 }
 

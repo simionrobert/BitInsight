@@ -103,7 +103,6 @@ function createRelationIndex() {
             "mappings": {
                 "doc": {
                     "properties": {
-                        "ID": { "type": "long" },
                         "IPs": { "type": "ip" }
                     }
                 }

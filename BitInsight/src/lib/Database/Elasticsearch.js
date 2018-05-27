@@ -60,10 +60,10 @@ class ElasticSearch {
 
         this.recordTorrentQueue.push(update);
         this.recordTorrentQueue.push(jsonObject);
-        this._queue(callback);
+        this._queueMetadata(callback);
     }
 
-    indexInfohash(infohash, callback) {
+    indexInfohash(infohash) {
         var index = {
             index: {
                 _index: 'torrent',
@@ -72,13 +72,13 @@ class ElasticSearch {
             }
         }
         var jsonObject = {
-            ID: (this._id++),
+            ID: this._id++,
             Peers: 0
         };
 
         this.recordInfohashQueue.push(index);
         this.recordInfohashQueue.push(jsonObject);
-        this._queue(callback);
+        this._queueInfohash();
     }
 
     indexIP(torrent, callback) {
@@ -108,7 +108,7 @@ class ElasticSearch {
             }
 
             //Verify if it needs to be inserted
-            this._queue(callback);
+            this._queueIP(callback);
         }
     }
 
@@ -153,7 +153,10 @@ class ElasticSearch {
         this.recordTorrentQueue.push(jsonObject);
     }
 
-    _queue(callback) {
+
+
+
+    _queueInfohash() {
         if (this.recordInfohashQueue.length / 2 >= this.batchSizeDHT) {
             this.client.bulk({
                 body: this.recordInfohashQueue
@@ -162,9 +165,10 @@ class ElasticSearch {
             this.recordInfohashQueue = [];
 
             console.log('Elasticsearch Class: Infohash Indexed')
-            return;
         }
+    }
 
+    _queueIP(callback) {
         if (this.recordRelationQueue.length / 2 >= this.batchSizeTorrent) {
             this.client.bulk({
                 body: this.recordRelationQueue
@@ -189,9 +193,10 @@ class ElasticSearch {
 
             if (callback != null)
                 callback();
-            return;
         }
+    }
 
+    _queueMetadata(callback) {
         if (this.recordTorrentQueue.length / 2 >= this.batchSizeTorrent) {
             this.client.bulk({
                 body: this.recordTorrentQueue
@@ -210,16 +215,9 @@ class ElasticSearch {
             index: "torrent",
             body: {
                 _source: false,
-                sort: [{ "ID": { "order": "asc" } }],
+                from: min,
                 size: max - min + 1,
-                query: {
-                    range: {
-                        "ID": {
-                            gte: min,
-                            lte: max
-                        }
-                    }
-                }
+                sort: [{ "ID": { "order": "asc" } }]
             }
         }, function (error, response) {
             if (error) {
@@ -228,17 +226,6 @@ class ElasticSearch {
                 callback(this._decodeGetLastInfohashes(response));
             }
         }.bind(this));
-    }
-
-    _decodeGetLastInfohashes(response) {
-        var listObjects = response.hits.hits;
-        var listInfohashes = []
-
-        for (let i = 0; i < listObjects.length; i++) {
-            listInfohashes.push(listObjects[i]._id)
-        }
-
-        return listInfohashes;
     }
 
     _getLastID(callback) {
@@ -264,6 +251,17 @@ class ElasticSearch {
             this._id = response.aggregations.max_id.value + 1;
             callback();
         }.bind(this))
+    }
+
+    _decodeGetLastInfohashes(response) {
+        var listObjects = response.hits.hits;
+        var listInfohashes = []
+
+        for (let i = 0; i < listObjects.length; i++) {
+            listInfohashes.push(listObjects[i]._id)
+        }
+
+        return listInfohashes;
     }
 }
 

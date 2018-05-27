@@ -48,7 +48,7 @@ metadataService.on('cacheEmpty', function () {
 
     console.log('Cache Empty');
 
-    indexer.getLastInfohashes(lastInfohashIdMetadata + 1, lastInfohashIdMetadata + 10, function (listInfohashes) {
+    indexer.getLastInfohashes(lastInfohashIdMetadata , lastInfohashIdMetadata + 9, function (listInfohashes) {
         if (listInfohashes.length != 0) {
             metadataService.addToCache(listInfohashes);
             metadataService.startService()
@@ -58,6 +58,5 @@ metadataService.on('cacheEmpty', function () {
 
 indexer.ready(function () {
     metadataService.startService()
-});
-
+})
 

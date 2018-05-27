@@ -12,7 +12,7 @@
     <ProjectGuid>bb3ae382-34e5-4b49-bd9a-74d9c07543a7</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>src\crawlInfohashes.js</StartupFile>
+    <StartupFile>src\test\crawlEvaluation.js</StartupFile>
     <StartWebBrowser>False</StartWebBrowser>
     <SearchPath>
     </SearchPath>
@@ -54,6 +54,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\indexInfohashesManual.js" />
+    <Compile Include="src\test\crawlEvaluation.js">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="src\test\test.js">
       <SubType>Code</SubType>
     </Compile>
@@ -71,7 +74,7 @@
     <Compile Include="src\lib\Services\PeerDiscovery.js">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\lib\Database\CreateESDatabase.js">
+    <Compile Include="src\lib\Database\createDatabase.js">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\test\testMetadataResolver.js">

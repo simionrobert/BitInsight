@@ -13,7 +13,7 @@ var crawler = new DHTCrawler(config.DEFAULT_CRAWLER_OPTIONS);
 var count = 0;
 var id = 0;
 
-crawler.on('infohash', function (listInfohash, rinfo) {
+crawler.on('listInfohash', function (listInfohash, rinfo) {
 
     setImmediate((listInfohash, rinfo) => {
         for (let i = 0; i < listInfohash.length; i++) {
@@ -24,18 +24,35 @@ crawler.on('infohash', function (listInfohash, rinfo) {
     }, listInfohash, rinfo);
 });
 
+crawler.on('infohash', function (infohash, rinfo) {
+
+    setImmediate((infohash, rinfo) => {
+        console.log((id++) + ". magnet:?xt=urn:btih:%s from %s:%s", infohash.toString("hex"), rinfo.address, rinfo.port);
+        indexer.indexInfohash(infohash);
+        count++;
+    }, infohash, rinfo);
+});
+
 function startRegistering(file, endTime, periodTime) {
+    function setTimeoutHours(timeout) {
+        secTimeoutHours = setTimeout(function () {
+            clearInterval(secRemaining)
+            fs.appendFile(file, count + "\nTotal infohashes crawled in " + timeout / 60000 + " minutes: " + id, function (err) {
+                if (err) {
+                    return console.log(err);
+                }
+
+                console.log("Count registered");
+                console.log("Crawling process done");
+                crawler.end();
+                process.exit();
+            });
+        }, timeout)
+    }
 
     //initialise variabiles for statistics
     var secTimeoutHours = 0;
     var secRemaining = 0;
-
-    function setTimeoutHours(timeout) {
-        secTimeoutHours = setTimeout(function () {
-            clearInterval(secRemaining)
-            crawler.end();
-        }, timeout)
-    }
 
     // Clean file
     fs.writeFile(file, "", function (err) {
@@ -64,21 +81,6 @@ function startRegistering(file, endTime, periodTime) {
 }
 
 indexer.ready(function () {
-
     crawler.start();
     startRegistering("resource/countPerMinute.txt", 60 * 60 * 1000, 60 * 1000); //1h and each minute
 });
-
-//function startSlaveProcess() {
-//    const subprocess = spawn('node', ['"' + __dirname + '/slave.js' + '"'], {
-//        shell: true,
-//        detached: true,
-//        stdio: 'ignore'
-//    });
-
-//    subprocess.unref();
-//}
-
-//setTimeout(function () {
-//    startSlaveProcess();
-//}, 10 * 1000)

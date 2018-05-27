@@ -3,8 +3,9 @@
     DEFAULT_CRAWLER_OPTIONS : {
         address: '0.0.0.0',
         port: 6881,
-        tableMaxSize: 200,
-        dhtAnnouncing: 1000,
+        tableMaxSize: 516,
+        dhtAnnouncingBootstrap: 1381,
+        dhtAnnouncingTable: 1511,
         BEP51Mode: false,
         verticalAttackMode: false,
         verticalAttackNrNodes: 8,
@@ -16,7 +17,7 @@
 
     DEFAULT_PEER_DISCOVERY_OPTIONS : {
         port: 6880,
-        timeout: 7 * 1000, //for rapid crawling put 2
+        timeout: 4 * 1000, //for rapid crawling put 2
         timeout_initial: 5*1000,
         dht: false
     },
@@ -32,7 +33,7 @@
         connection: {
             host: 'localhost:9200'
         },
-        batchSizeDHT: 100,
+        batchSizeDHT: 5000,
         batchSizeTorrent:10
     },
 };

@@ -37,7 +37,7 @@ peerDiscoveryService.on('ip', function (torrent) {
 });
 
 peerDiscoveryService.on('cacheEmpty', function () {
-    indexer.getLastInfohashes(lastInfohashIdIPs + 1, lastInfohashIdIPs + 10, function (listInfohashes) {
+    indexer.getLastInfohashes(lastInfohashIdIPs , lastInfohashIdIPs + 9, function (listInfohashes) {
         if (listInfohashes.length != 0) {
             peerDiscoveryService.addToCache(listInfohashes);
             peerDiscoveryService.startService()
@@ -47,4 +47,4 @@ peerDiscoveryService.on('cacheEmpty', function () {
 
 indexer.ready(function () {
     peerDiscoveryService.startService()
-});
+})
