@@ -1,7 +1,7 @@
 ﻿'use strict'
 
-const config = require('../../config');
-const DHTCrawler = require('../lib/Crawling/DHTCrawler');
+const config = require('../config');
+const DHTCrawler = require('./lib/Crawling/DHTCrawler');
 const fs = require('fs');
 
 

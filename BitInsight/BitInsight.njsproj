@@ -12,7 +12,7 @@
     <ProjectGuid>bb3ae382-34e5-4b49-bd9a-74d9c07543a7</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>src\test\crawlEvaluation.js</StartupFile>
+    <StartupFile>src\indexPeers.js</StartupFile>
     <StartWebBrowser>False</StartWebBrowser>
     <SearchPath>
     </SearchPath>
@@ -54,7 +54,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\indexInfohashesManual.js" />
-    <Compile Include="src\test\crawlEvaluation.js">
+    <Compile Include="src\crawlEvaluation.js">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\test\test.js">

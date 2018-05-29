@@ -3,7 +3,7 @@
     DEFAULT_CRAWLER_OPTIONS : {
         address: '0.0.0.0',
         port: 6881,
-        tableMaxSize: 516,
+        tableMaxSize: 256,
         dhtAnnouncingBootstrap: 1381,
         dhtAnnouncingTable: 1511,
         BEP51Mode: false,
@@ -17,7 +17,7 @@
 
     DEFAULT_PEER_DISCOVERY_OPTIONS : {
         port: 6880,
-        timeout: 4 * 1000, //for rapid crawling put 2
+        timeout: 7 * 1000, //for rapid crawling put 2
         timeout_initial: 5*1000,
         dht: false
     },

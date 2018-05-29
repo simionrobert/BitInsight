@@ -10,8 +10,8 @@ const fs = require('fs');
 
 var indexer = new ElasticSearch(config.DEFAULT_ELASTIC_SEARCH_OPTIONS);
 var crawler = new DHTCrawler(config.DEFAULT_CRAWLER_OPTIONS);
-var count = 0;
 var id = 0;
+var count = 0;
 
 crawler.on('listInfohash', function (listInfohash, rinfo) {
 
@@ -79,6 +79,8 @@ function startRegistering(file, endTime, periodTime) {
         count = 0;
     }, periodTime)
 }
+
+
 
 indexer.ready(function () {
     crawler.start();

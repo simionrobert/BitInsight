@@ -21,7 +21,9 @@ class MetadataService extends EventEmitter {
 
         this.onMetadata = function (torrent, remoteAddress) {
             this.emit("metadata", this.categoriser.parse(torrent))
-            this._nextInfohash()
+            setTimeout(function () {
+                this._nextInfohash()
+            }.bind(this), 1000);
         }
 
         this.onMetadataTimeout = function (infohash) {
