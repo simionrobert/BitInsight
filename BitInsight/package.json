@@ -10,7 +10,6 @@
     "bencode": "^2.0.0",
     "bittorrent-dht": "^8.4.0",
     "bittorrent-protocol": "^2.4.1",
-    "bluebird": "^3.5.1",
     "elasticsearch": "^14.2.2",
     "lodash": "^4.17.10",
     "magnet-uri": "^5.1.8",

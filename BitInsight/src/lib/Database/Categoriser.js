@@ -169,6 +169,8 @@ class Categorizer {
             torrent.categories.push('Game');
         } else if (file.name.toLowerCase().indexOf('repack') > -1) {
             torrent.categories.push('Game');
+        } else if (file.name.toLowerCase().indexOf('ps4') > -1) {
+            torrent.categories.push('Game');
         }
     }
 }
