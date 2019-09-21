@@ -5,7 +5,6 @@ The underling database is interfaced through [BitInsight-WebInterface](https://g
 a statistical analyser and data visualisation tool.
 
 This repo contains the following modules:
-
 1. BitTorrent DHT Indexer
 2. BitTorrent Peer Discovery
 3. BitTorrent Torrent Metadata
@@ -13,8 +12,6 @@ This repo contains the following modules:
 ## BitTorrent DHT Indexer
 
 This module crawls the DHT Network for infohashes. Implement several functionalities from [BEP5](http://www.bittorrent.org/beps/bep_0005.html)
-
-### features
 * it uses the Sybil attack (horrizontal and/or vertical) on other nodes's routing tables. 
 * efficiently discovers infohashes on DHT
 * has a mechanism for avoiding 'bad/questionable node' tag from other nodes
@@ -26,8 +23,6 @@ The idea of a Sybil attack is to inject multiple fake identities into the system
 ## BitTorrent Peer Discovery
 
 This module uses bittorrent-dht, a Node.js implementation of BEP5, for discovering BitTorrent peers.
-
-### features
 * finds peers from DHT network based on an infohash
 * can start finding peers with just an infohash, before full metadata is available
 * automatically announces, so other peers can discover us
@@ -35,20 +30,16 @@ This module uses bittorrent-dht, a Node.js implementation of BEP5, for discoveri
 ## BitTorrent Torrent Metadata
 
 This module uses bittorrent-protocol and ut_metadata for getting torrent metadata.
-
-### features
 * allows a client to join a swarm and complete a download without a .torrent file
 * uses Bittorrent Peer Discovery for finding peers
 * get torrent structure, file names and sizes
 
 ## Prerequistes
+1. Download and install [https://www.elastic.co/downloads/elasticsearch](https://www.elastic.co/downloads/elasticsearch). Run bin/elasticsearch (or bin\elasticsearch.bat on Windows)
 
-1.Download and install [https://www.elastic.co/downloads/elasticsearch](https://www.elastic.co/downloads/elasticsearch)
-Run bin/elasticsearch (or bin\elasticsearch.bat on Windows)
+2. (Optionally) Download and install [https://www.elastic.co/downloads/kibana](https://www.elastic.co/downloads/kibana). Run bin/kibana (or bin\kibana.bat on Windows)
 
-2. (Optionally) Download and install [https://www.elastic.co/downloads/kibana](https://www.elastic.co/downloads/kibana)
-Run bin/kibana (or bin\kibana.bat on Windows)
-
+## Install
 Get the latest snapshot:
 ```
 git clone https://github.com/simionrobert/BitInsight.git
