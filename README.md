@@ -4,36 +4,6 @@ BitTorrent Nodejs indexer which leverages the DHT protocol for crawling infohash
 The underling database is interfaced through [BitInsight-WebInterface](https://github.com/simionrobert/BitInsight-WebInterface.git),
 a statistical analyser and data visualisation tool.
 
-This repo contains the following modules:
-1. BitTorrent DHT Indexer
-2. BitTorrent Peer Discovery
-3. BitTorrent Torrent Metadata
-
-## BitTorrent DHT Indexer
-
-This module crawls the DHT Network for infohashes. Implement several functionalities from [BEP5](http://www.bittorrent.org/beps/bep_0005.html)
-* it uses the Sybil attack (horrizontal and/or vertical) on other nodes's routing tables. 
-* efficiently discovers infohashes on DHT
-* has a mechanism for avoiding 'bad/questionable node' tag from other nodes
-* complete implementation of the [BEP51](http://www.bittorrent.org/beps/bep_0051.html) in JavaScript
-* follows [the spec](http://www.bittorrent.org/beps/bep_0051.html)
-
-The idea of a Sybil attack is to inject multiple fake identities into the system, and use them as a starting point to perform further attacks.
-
-## BitTorrent Peer Discovery
-
-This module uses bittorrent-dht, a Node.js implementation of BEP5, for discovering BitTorrent peers.
-* finds peers from DHT network based on an infohash
-* can start finding peers with just an infohash, before full metadata is available
-* automatically announces, so other peers can discover us
-
-## BitTorrent Torrent Metadata
-
-This module uses bittorrent-protocol and ut_metadata for getting torrent metadata.
-* allows a client to join a swarm and complete a download without a .torrent file
-* uses Bittorrent Peer Discovery for finding peers
-* get torrent structure, file names and sizes
-
 ## Prerequistes
 1. Download and install [https://www.elastic.co/downloads/elasticsearch](https://www.elastic.co/downloads/elasticsearch). Run bin/elasticsearch (or bin\elasticsearch.bat on Windows)
 
@@ -80,10 +50,40 @@ node indexPeers.js
 
 Visit http://localhost:5601/app/kibana to view your data
 
-**Aditional notes:**
-If you have some issues referring parts of code in the master branch add them in the issues section.
 
-### Further reading
+## Description
+This repo contains the following modules:
+1. BitTorrent DHT Indexer
+2. BitTorrent Peer Discovery
+3. BitTorrent Torrent Metadata
+
+### BitTorrent DHT Indexer
+
+This module crawls the DHT Network for infohashes. Implement several functionalities from [BEP5](http://www.bittorrent.org/beps/bep_0005.html)
+* it uses the Sybil attack (horrizontal and/or vertical) on other nodes's routing tables. 
+* efficiently discovers infohashes on DHT
+* has a mechanism for avoiding 'bad/questionable node' tag from other nodes
+* complete implementation of the [BEP51](http://www.bittorrent.org/beps/bep_0051.html) in JavaScript
+* follows [the spec](http://www.bittorrent.org/beps/bep_0051.html)
+
+The idea of a Sybil attack is to inject multiple fake identities into the system, and use them as a starting point to perform further attacks.
+
+### BitTorrent Peer Discovery
+
+This module uses bittorrent-dht, a Node.js implementation of BEP5, for discovering BitTorrent peers.
+* finds peers from DHT network based on an infohash
+* can start finding peers with just an infohash, before full metadata is available
+* automatically announces, so other peers can discover us
+
+### BitTorrent Torrent Metadata
+
+This module uses bittorrent-protocol and ut_metadata for getting torrent metadata.
+* allows a client to join a swarm and complete a download without a .torrent file
+* uses Bittorrent Peer Discovery for finding peers
+* get torrent structure, file names and sizes
+
+
+## Further reading
 * [BitTorent DHT protocol](http://www.bittorrent.org/beps/bep_0005.html)
 * [BEP51-DHT Infohash Indexing](http://www.bittorrent.org/beps/bep_0051.html)
 * [Crawling BitTorrent DHTs for Fun and Profit](https://www.usenix.org/legacy/event/woot10/tech/full_papers/Wolchok.pdf)
@@ -92,6 +92,9 @@ If you have some issues referring parts of code in the master branch add them in
 
 ## Thank You
 I really appreciate all kinds of feedback and contributions.
+
+**Aditional notes:**
+If you have some issues referring parts of code in the master branch add them in the issues section.
 
 ## License
 
