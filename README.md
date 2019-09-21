@@ -41,23 +41,19 @@ This module uses bittorrent-protocol and ut_metadata for getting torrent metadat
 * uses Bittorrent Peer Discovery for finding peers
 * get torrent structure, file names and sizes
 
-## Getting Started
+## Prerequistes
 
-```
-# Get the latest snapshot
-git clone https://github.com/simionrobert/BitInsight.git MyLocation
-
-# Change directory
-cd MyLocation
-
-# Install NPM dependencies
-npm install
-
-# Download and install https://www.elastic.co/downloads/elasticsearch 
+1.Download and install [https://www.elastic.co/downloads/elasticsearch](https://www.elastic.co/downloads/elasticsearch)
 Run bin/elasticsearch (or bin\elasticsearch.bat on Windows)
 
-# (Optionally) Download and install https://www.elastic.co/downloads/kibana
+2. (Optionally) Download and install [https://www.elastic.co/downloads/kibana](https://www.elastic.co/downloads/kibana)
 Run bin/kibana (or bin\kibana.bat on Windows)
+
+Get the latest snapshot:
+```
+git clone https://github.com/simionrobert/BitInsight.git
+cd myLocation
+npm install
 ```
 
 ## Usage
@@ -89,14 +85,14 @@ PUT /_ingest/pipeline/geoip?pretty
 
 #Then start indexing IPs
 node indexPeers.js
-
-# Visit http://localhost:5601/app/kibana to view your data
 ```
+
+Visit http://localhost:5601/app/kibana to view your data
 
 **Aditional notes:**
 If you have some issues referring parts of code in the master branch add them in the issues section.
 
-### further reading
+### Further reading
 * [BitTorent DHT protocol](http://www.bittorrent.org/beps/bep_0005.html)
 * [BEP51-DHT Infohash Indexing](http://www.bittorrent.org/beps/bep_0051.html)
 * [Crawling BitTorrent DHTs for Fun and Profit](https://www.usenix.org/legacy/event/woot10/tech/full_papers/Wolchok.pdf)
