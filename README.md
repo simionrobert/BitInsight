@@ -83,7 +83,12 @@ This module uses bittorrent-protocol and ut_metadata for getting torrent metadat
 * get torrent structure, file names and sizes
 
 ## Performance
-A crawling rate comparison was made between our algorithm, [AlphaReign](https://github.com/AlphaReign/scraper) and [simDHT](https://github.com/wuzhenda/simDHT)
+A crawling rate comparison was made between our algorithm, [AlphaReign](https://github.com/AlphaReign/scraper) and [simDHT](https://github.com/wuzhenda/simDHT). 
+
+Also a paper has been published: `A BitTorrent DHT Crawler, IEEE 13th SACI, Simion Robert George`. 
+
+
+
 ![](https://github.com/simionrobert/BitInsight/blob/master/images/Captur2.JPG)
 
 
