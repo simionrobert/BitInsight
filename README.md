@@ -82,6 +82,10 @@ This module uses bittorrent-protocol and ut_metadata for getting torrent metadat
 * uses Bittorrent Peer Discovery for finding peers
 * get torrent structure, file names and sizes
 
+## Performance
+A crawling rate comparison was made between our algorithm, [AlphaReign](https://github.com/AlphaReign/scraper) and [simDHT](https://github.com/wuzhenda/simDHT)
+![](https://github.com/simionrobert/BitInsight/blob/master/images/Captur2.JPG)
+
 
 ## Further reading
 * [BitTorent DHT protocol](http://www.bittorrent.org/beps/bep_0005.html)
