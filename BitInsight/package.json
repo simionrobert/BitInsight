@@ -14,6 +14,6 @@
     "lodash": "^4.17.13",
     "magnet-uri": "^5.1.8",
     "parse-torrent": "^5.9.1",
-    "ut_metadata": "^3.2.1"
+    "ut_metadata": "^3.5.0"
   }
 }
