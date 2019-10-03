@@ -13,7 +13,7 @@
     "elasticsearch": "^16.4.0",
     "lodash": "^4.17.13",
     "magnet-uri": "^5.2.4",
-    "parse-torrent": "^5.9.1",
+    "parse-torrent": "^7.0.1",
     "ut_metadata": "^3.5.0"
   }
 }
