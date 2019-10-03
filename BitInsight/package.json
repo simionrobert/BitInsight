@@ -7,13 +7,13 @@
     "name": "Baal"
   },
   "dependencies": {
-    "bencode": "^2.0.0",
+    "bencode": "^2.0.1",
     "bittorrent-dht": "^8.4.0",
     "bittorrent-protocol": "^3.1.1",
-    "elasticsearch": "^14.2.2",
+    "elasticsearch": "^16.4.0",
     "lodash": "^4.17.13",
-    "magnet-uri": "^5.1.8",
+    "magnet-uri": "^5.2.4",
     "parse-torrent": "^7.0.1",
-    "ut_metadata": "^3.2.1"
+    "ut_metadata": "^3.5.0"
   }
 }
