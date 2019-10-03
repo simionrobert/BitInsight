@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "bencode": "^2.0.0",
-    "bittorrent-dht": "^8.4.0",
+    "bittorrent-dht": "^9.0.3",
     "bittorrent-protocol": "^3.1.1",
     "elasticsearch": "^14.2.2",
     "lodash": "^4.17.13",
