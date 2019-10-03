@@ -12,7 +12,7 @@
     "bittorrent-protocol": "^3.1.1",
     "elasticsearch": "^14.2.2",
     "lodash": "^4.17.13",
-    "magnet-uri": "^5.1.8",
+    "magnet-uri": "^5.2.4",
     "parse-torrent": "^5.9.1",
     "ut_metadata": "^3.5.0"
   }
