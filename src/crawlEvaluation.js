@@ -11,9 +11,9 @@ var id = 0;
 
 function startRegistering(file, endTime, periodTime) {
     function setTimeoutHours(timeout) {
-        secTimeoutHours = setTimeout(function () {
+        secTimeoutHours = setTimeout(function() {
             clearInterval(secRemaining)
-            fs.appendFile(file, count +"\nTotal infohashes crawled in " + timeout / 60000 + " minutes: " + id, function (err) {
+            fs.appendFile(file, count + "\nTotal infohashes crawled in " + timeout / 60000 + " minutes: " + id, function(err) {
                 if (err) {
                     return console.log(err);
                 }
@@ -31,7 +31,7 @@ function startRegistering(file, endTime, periodTime) {
     var secRemaining = 0;
 
     // Clean file
-    fs.writeFile(file, "", function (err) {
+    fs.writeFile(file, "", function(err) {
         if (err) {
             return console.log(err);
         }
@@ -43,8 +43,8 @@ function startRegistering(file, endTime, periodTime) {
     setTimeoutHours(endTime)
 
     // Set interval to write
-    secRemaining = setInterval(function () {
-        fs.appendFile(file, count + "\n", function (err) {
+    secRemaining = setInterval(function() {
+        fs.appendFile(file, count + "\n", function(err) {
             if (err) {
                 return console.log(err);
             }
@@ -56,11 +56,11 @@ function startRegistering(file, endTime, periodTime) {
     }, periodTime)
 }
 
-crawler.on('infohash', function (listInfohash, rinfo) {
+crawler.on('infohash', function(listInfohash, rinfo) {
     count++;
     id++;
 });
 
 
 crawler.start();
-startRegistering("resource/countPerMinute.txt", 60 * 60 * 1000, 60 * 1000); //1h and each minute
+startRegistering("resources/countPerMinute.txt", 60 * 60 * 1000, 60 * 1000); //1h and each minute

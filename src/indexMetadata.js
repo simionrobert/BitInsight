@@ -10,7 +10,7 @@ const MetadataService = require('./lib/Services/MetadataResolverService');
 var indexer = new ElasticSearch(config.DEFAULT_ELASTIC_SEARCH_OPTIONS);
 var metadataService = new MetadataService(config);
 
-var lastInfohashIdMetadata = parseInt(fs.readFileSync('resource/lastInfohashIdMetadata.txt'), 10);
+var lastInfohashIdMetadata = parseInt(fs.readFileSync('resources/lastInfohashIdMetadata.txt'), 10);
 if (isNaN(lastInfohashIdMetadata)) {
     lastInfohashIdMetadata = 0;
 }
@@ -18,12 +18,12 @@ if (isNaN(lastInfohashIdMetadata)) {
 
 function saveMetaIDCallback() {
     //periodically save to keep log of where i remained and to continue from
-    fs.writeFile('resource/lastInfohashIdMetadata.txt', lastInfohashIdMetadata, function(){
+    fs.writeFile('resources/lastInfohashIdMetadata.txt', lastInfohashIdMetadata, function() {
         console.log('File updated')
     });
 }
 
-metadataService.on('metadata', function (torrent) {
+metadataService.on('metadata', function(torrent) {
     lastInfohashIdMetadata++;
 
     console.log('\n' + lastInfohashIdMetadata + ". Infohash: " + torrent.infohash.toString('hex'))
@@ -36,7 +36,7 @@ metadataService.on('metadata', function (torrent) {
     console.log('/////////////////////////////////////////////////////');
 });
 
-metadataService.on('metadataTimeout', function (infohash) {
+metadataService.on('metadataTimeout', function(infohash) {
     lastInfohashIdMetadata++;
 
     console.log('\n' + lastInfohashIdMetadata + ". Infohash: " + infohash.toString('hex'));
@@ -44,11 +44,11 @@ metadataService.on('metadataTimeout', function (infohash) {
     console.log('/////////////////////////////////////////////////////');
 })
 
-metadataService.on('cacheEmpty', function () {
+metadataService.on('cacheEmpty', function() {
 
     console.log('Cache Empty');
 
-    indexer.getLastInfohashes(lastInfohashIdMetadata , lastInfohashIdMetadata + 9, function (listInfohashes) {
+    indexer.getLastInfohashes(lastInfohashIdMetadata, lastInfohashIdMetadata + 9, function(listInfohashes) {
         if (listInfohashes.length != 0) {
             metadataService.addToCache(listInfohashes);
             metadataService.startService()
@@ -56,7 +56,6 @@ metadataService.on('cacheEmpty', function () {
     })
 })
 
-indexer.ready(function () {
+indexer.ready(function() {
     metadataService.startService()
 })
-

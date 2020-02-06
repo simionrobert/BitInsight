@@ -10,7 +10,7 @@ const PeerDiscoveryService = require('./lib/Services/PeerDiscoveryService');
 var indexer = new ElasticSearch(config.DEFAULT_ELASTIC_SEARCH_OPTIONS);
 var peerDiscoveryService = new PeerDiscoveryService(config);
 
-var lastInfohashIdIPs = parseInt(fs.readFileSync('resource/lastInfohashIdIPs.txt'), 10);
+var lastInfohashIdIPs = parseInt(fs.readFileSync('resources/lastInfohashIdIPs.txt'), 10);
 
 if (isNaN(lastInfohashIdIPs)) {
     lastInfohashIdIPs = 0;
@@ -19,11 +19,11 @@ if (isNaN(lastInfohashIdIPs)) {
 
 function saveInfohashIDCallback() {
     //periodically save to keep log of where i remained and to continue from
-    fs.writeFile('resource/lastInfohashIdIPs.txt', lastInfohashIdIPs, function() {
+    fs.writeFile('resources/lastInfohashIdIPs.txt', lastInfohashIdIPs, function() {
         console.log("File updated")
     });
 }
-peerDiscoveryService.on('ip', function (torrent) {
+peerDiscoveryService.on('ip', function(torrent) {
     lastInfohashIdIPs++;
 
     console.log('\n' + lastInfohashIdIPs + ". Infohash: " + torrent.infohash.toString('hex'));
@@ -36,8 +36,8 @@ peerDiscoveryService.on('ip', function (torrent) {
     }, torrent);
 });
 
-peerDiscoveryService.on('cacheEmpty', function () {
-    indexer.getLastInfohashes(lastInfohashIdIPs , lastInfohashIdIPs + 9, function (listInfohashes) {
+peerDiscoveryService.on('cacheEmpty', function() {
+    indexer.getLastInfohashes(lastInfohashIdIPs, lastInfohashIdIPs + 9, function(listInfohashes) {
         if (listInfohashes.length != 0) {
             peerDiscoveryService.addToCache(listInfohashes);
             peerDiscoveryService.startService()
@@ -45,6 +45,6 @@ peerDiscoveryService.on('cacheEmpty', function () {
     })
 })
 
-indexer.ready(function () {
+indexer.ready(function() {
     peerDiscoveryService.startService()
 })
