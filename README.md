@@ -5,6 +5,12 @@ BitTorrent Nodejs indexer which leverages the DHT protocol for crawling infohash
 The underling database is interfaced through [BitInsight-WebInterface](https://github.com/simionrobert/BitInsight-WebInterface.git),
 a statistical analyser and data visualisation tool.
 
+The following solution presents an implementation which leverages the BitTorrent DHT Network in order to build a clean torent search engine. Moreover, it can be used to monitor pirates behaviour by tracking their torent download history in preparation for legal attacks. It also provides in-depth analytics and data statistics about the BitTorrent network. In fact, this issue becomes more significant as the copyright and legal pressure from authorities systematically determines the closure of torent hosting sites, futilely trying to stop the damage done to the creative industry. 
+
+A tool was written to crawl the DHT Mainline for torents using both Sybil attack and BEP 51 protocol extension. Following, the network was used to collect addresses of downloaders. The gathered data was then stored and analysed throught Elasticsearch. On top of that, a web application was build to interface and query the related data.
+
+Over half a million torents have been captured in one hour and 61.315 IP addresses have been also tracked, downloading 7733 torents over 14 hours. The subsequent analyses showed that the largest IP clusters were mainly located in Europe and Asia. All these results imply that the adoption of DHT indexing over centralised tracking servers will have mixed implications. While it will likely make illicit torents harder to supress, it will not help users hide their actions. 
+
 ## Prerequistes
 
 1. Download and install [https://www.elastic.co/downloads/elasticsearch](https://www.elastic.co/downloads/elasticsearch). Run bin/elasticsearch (or bin\elasticsearch.bat on Windows)
